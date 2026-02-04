@@ -82,11 +82,12 @@ import { useRouter } from 'vue-router';
 import axios from 'axios'
 import { ref, computed, onMounted } from 'vue';
 import { useAbility } from '@casl/vue';
-import { cartProducts } from '../store';
+import { cartProducts,User } from '../store';
 import Typed from 'typed.js';
 
 const router = useRouter();
 const cartProduct = cartProducts();
+const userStore = User();
 const { can } = useAbility();
 let selectedProduct = [];
 const operations = { operation: '' };
@@ -125,7 +126,9 @@ async function increaseQuantity(productId) {
 
 const filteredProducts = computed(() => {
   const term = filterText.value.trim().toLowerCase();
-  if (!term) return cartProduct.cartDetails;
+  if (!term) return cartProduct.cartDetails.filter((cartDetail)=>{
+    return cartDetail.user_id == userStore.user.id
+  });
   return cartProduct.cartDetails.filter(products => {
     return (
       (products.product.title && products.product.title.toLowerCase().includes(term)) ||

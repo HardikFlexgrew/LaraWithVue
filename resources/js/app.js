@@ -22,7 +22,8 @@ const abilities = ref(ability(userStore.role));
 watch(
     () => userStore.role,
     (newRole) => {
-        abilities.value = ability(newRole);
+        const newAbilities = ability(newRole);
+        abilities.value.update(newAbilities.rules);
     }
 );
 
