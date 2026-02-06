@@ -11,6 +11,7 @@
         </svg>
         <input
           v-model="filterText"
+          id="searchFilterInput"
           type="text"
           class="modern-form-input filter-product-input"
           :placeholder="filterPlaceholder"
@@ -46,7 +47,7 @@
           <span class="modern-product-card__price">${{ product.price }}</span>
           <div class="modern-product-card__actions">
             <button @click="editProduct(product.id)" class="modern-btn modern-btn--edit" title="edit product"
-              aria-label="Edit" v-if="can('edit', 'product')">
+              aria-label="Edit" v-if="can('edit', 'product')">  
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M15.232 5.232l3.536 3.536-10.036 10.036-3.536-3.536L15.232 5.232zM3 21h7.5M17 7l-1-1c-1.172-1.172-3.072-1.172-4.244 0l-1 1c-1.172 1.172-1.172 3.072 0 4.244l1 1c1.172 1.172 3.072 1.172 4.244 0l1-1c1.172-1.172 1.172-3.072 0-4.244z"
@@ -109,11 +110,6 @@ async function getProduct() {
   products.value = res.data.products;
 }
 
-watch(
-  () => products.value,
-  () => getProduct()
-)
-
 const filteredProducts = computed(() => {
   const term = filterText.value.trim().toLowerCase();
   if (!term) return products.value;
@@ -156,6 +152,7 @@ async function deleteProduct(productId) {
           progressBar: true,
           closeButton: true
         });
+        getProduct()
       }
     } catch (err) {
       toastr.error(err.response.data.message, 'Error', {

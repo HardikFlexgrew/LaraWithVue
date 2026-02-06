@@ -11,11 +11,18 @@ use Illuminate\Support\Facades\Auth;
 class productController extends Controller
 {
     public function show() {
-        $data = Product::orderBy('id','desc')->get();
-        return response()->json([
-            'success' => true,
-            'products' => $data
-        ]);
+        try{
+            $data = Product::orderBy('id','desc')->get();
+            return response()->json([
+                'success' => true,
+                'products' => $data
+            ]);
+        } catch(err){
+            return response()->json([
+                'success' => false,
+                'message' => err,
+            ]);
+        }
     }
 
     public function create(Request $request){
@@ -95,6 +102,7 @@ class productController extends Controller
             if ($request->hasFile('image')) {
                 $file = $request->file('image');
                 $imagePath = $file->store('product', 'public');
+                // dd($imagePath);
 
                 $updatedProduct = Product::updateOrCreate(
                     ['id' => $productId],

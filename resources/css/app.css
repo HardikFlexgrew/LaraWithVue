@@ -132,7 +132,7 @@
 }
 
 .nav-link-modern:hover{
-    color: #086ea4;
+    color: #fff;
     font-weight: 500;
 }
 
@@ -440,11 +440,12 @@
 
 .login-error,
 .login-error-general {
-    color: #db2121;
+    color: #2d83c1;
     font-size: .96em;
     margin-top: 0.24em;
     margin-bottom: .14em;
     display: flex;
+    font-weight: 600;
     align-items: center;
 }
 

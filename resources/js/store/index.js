@@ -1,3 +1,4 @@
+import axios from "axios";
 import { defineStore } from "pinia";
 
 export const User = defineStore("user", {
@@ -6,6 +7,31 @@ export const User = defineStore("user", {
         role : '',
         user : ''
     }),
+    getters : {
+        isLoggedIn : (state)=>{
+            return !!state.user;
+        }
+    },
+    actions : {
+        setUser(response){
+            this.user = response ?? null;
+        },
+
+        async logout(){
+            try { 
+                const res = await axios.post('/api/logout', {
+                    credentials : 'include',
+                    headers : {Accept:'application/json'},
+                });
+                this.user = null;
+                this.role = null
+                this.loggedIn = false;
+                return res;
+            } catch { 
+                return 'Logout failed';
+            }
+        }
+    },
     persist: true
 });
 

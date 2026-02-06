@@ -54,4 +54,8 @@ class AuthenticatedSessionController extends Controller
             "success" => true,
         ]);
     }
+
+    public function user(){
+        return Auth::user();
+    }
 }
