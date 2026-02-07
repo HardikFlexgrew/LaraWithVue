@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\CartProduct;
 use \Illuminate\Database\QueryException as queryException;
+use spatie\laravelpermission\src\Middleware\PermissionMiddleware;
 use Illuminate\Support\Facades\Auth;
 
 class productController extends Controller

@@ -1,14 +1,29 @@
 <template>
   <div class="login-wrapper">
     <form class="login-form" :style="register ? 'max-width: 510px' : 'max-width: 370px'"
-      @submit.prevent="register ? handleRegister : handleLogin">
+      @submit.prevent="register ? handleRegister() : handleLogin()">
       <h2 class="login-title">
         <svg width="27" height="27" viewBox="0 0 24 24" fill="none" style="vertical-align:middle; margin-right:.5em;">
           <circle cx="12" cy="7" r="5" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.4" />
-          <rect x="4.5" y="14.5" width="15" height="7" rx="3.5" fill="#e0f2fe" stroke="#1197e6" stroke-width="1.2" />
+          <rect x="4.5" y="14.5" width="15" height="7" rx="3.5" fill="  #e0f2fe" stroke="#1197e6" stroke-width="1.2" />
         </svg>
         {{ register ? 'Register' : 'Login' }}
       </h2>
+      <div v-if="register" class="form-group">
+        <label for="name" class="login-label">Name</label>
+        <input type="name" id="name" v-model="name" class="login-input" placeholder="Enter your name" required
+          autocomplete="username" />
+        <div class="login-error" v-if="errorMessage && errorMessage.name">
+          <span>
+            <svg width="14" height="14" fill="none" viewBox="0 0 20 20" style="margin-right:0.13em;">
+              <circle cx="10" cy="10" r="9" fill="#fee2e2" />
+              <path stroke="#db6060" d="M10 6v4" />
+              <circle cx="10" cy="13.25" r=".75" fill="#db6060" />
+            </svg>
+            {{ errorMessage.name[0] }}
+          </span>
+        </div>
+      </div>
       <div class="form-group">
         <label for="email" class="login-label">Email Address</label>
         <input type="email" id="email" v-model="email" class="login-input" placeholder="Enter your email" required
@@ -28,7 +43,7 @@
         <div class="col-md-6">
           <div class="form-group">
             <label for="password" class="login-label">Password</label>
-            <input type="password" id="password" v-model="password" class="login-input" placeholder="Enter password"
+            <input type="password" id="password" name="password" v-model="password" class="login-input" placeholder="Enter password"
               required autocomplete="current-password" />
             <div class="login-error" v-if="errorMessage && errorMessage.password">
               <span>
@@ -44,24 +59,25 @@
         </div>
         <div class="col-md-6">
           <div class="form-group">
-            <label for="confirmPassword" class="login-label">Confirm Password</label>
+            <label for="password_confirmation" class="login-label">Confirm Password</label>
             <input 
               type="password" 
               @input="checkPassword"
-              id="confirmPassword" 
-              v-model="confirmPassword"
+              id="password_confirmation" 
+              name="password_confirmation"
+              v-model="password_confirmation"
               class="login-input" 
               placeholder="Enter confirm password" 
               required 
               autocomplete="current-password" />
-            <div class="login-error" v-if="errorMessage && errorMessage.confirmPassword">
+            <div class="login-error" v-if="errorMessage && errorMessage.password_confirmation">
               <span>
                 <svg width="14" height="14" fill="none" viewBox="0 0 20 20" style="margin-right:0.13em;">
                   <circle cx="10" cy="10" r="9" fill="#fee2e2" />
                   <path stroke="#db6060" d="M10 6v4" />
                   <circle cx="10" cy="13.25" r=".75" fill="#db6060" />
                 </svg>
-                {{ errorMessage.confirmPassword[0] }}
+                {{ errorMessage.password_confirmation[0] }}
               </span>
             </div>
           </div>
@@ -118,9 +134,10 @@ function reset() {
 
 const router = useRouter()
 const userStore = User();
+const name = ref('');
 const email = ref('')
 const password = ref('')
-const confirmPassword = ref('')
+const password_confirmation = ref('')
 const errorMessage = ref({})
 const generalError = ref('')
 
@@ -134,6 +151,33 @@ function checkPassword(e) {
     e.target.style.borderColor = 'green';
   } else {
     e.target.style.borderColor = 'red';
+  }
+}
+
+async function handleRegister() {
+  if(password_confirmation.value != password.value){
+    toastr.error('Password can\'t matches');
+    return;
+  } else {
+    try{
+      const formData = new FormData();
+      formData.append('name', name.value);
+      formData.append('email', email.value);
+      formData.append('password', password.value);
+      formData.append('password_confirmation', password_confirmation.value);
+
+      const res = await axios.post('/api/register', formData);
+  
+      if(res.data.success){
+        toastr.success(res.data.message);
+        userStore.loggedIn = true;
+        if(res.data.user) userStore.setUser(res.data.user);
+        if(res.data.role) userStore.role = res.data.role;
+        await router.push({name:'product'});
+      }
+    } catch(err){
+      toastr.error(err.response.data.message);
+    }
   }
 }
 

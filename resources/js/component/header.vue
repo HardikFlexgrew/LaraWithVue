@@ -110,7 +110,6 @@ onMounted(()=>{
 watch(
   ()=>userStore.loggedIn,
   ()=>{
-    console.log(userStore.loggedIn);  
     if(!userStore.loggedIn){
       router.push({name : 'login'})
     }

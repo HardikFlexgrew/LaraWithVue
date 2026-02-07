@@ -6,7 +6,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Middlewares\PermissionMiddleware;
+use \Spatie\Permission\Middleware\PermissionMiddleware;
 
 Route::middleware(['web'])->group(function () {
 
@@ -28,6 +28,8 @@ Route::middleware(['web'])->group(function () {
         Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('api.logout');
     });
 
-    Route::post('/product/create', [productController::class, 'create'])->name('api.product.create');
+    Route::post('/product/create', [productController::class, 'create'])
+        ->middleware('permission:add-product')
+        ->name('api.product.create');
 });
 ?>

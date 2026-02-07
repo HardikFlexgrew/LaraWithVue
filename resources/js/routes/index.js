@@ -4,7 +4,8 @@ import Add_product from "../component/add_product.vue";
 import Login from "../component/login.vue";
 import Cart from "../component/cart.vue";
 import { User } from "@/store";
-import Register from "@/component/register.vue";
+import { useAbility } from "@casl/vue";
+import { rule } from "postcss";
 
 // Example of setting role and permissions for routes using meta fields
 const routes = [
@@ -21,7 +22,11 @@ const routes = [
         name: 'add_product',
         component: Add_product,
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permissions : {
+                action : 'add',
+                subject : 'product'
+            }
         }
     },
     {
@@ -30,7 +35,11 @@ const routes = [
         component: Add_product,
         props: true,
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permissions : {
+                action : 'edit',
+                subject : 'product'
+            }
         }
     },
     {
@@ -59,9 +68,19 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+    const {can} = useAbility();
     const auth = User();
-    if (to.meta.requiresAuth && !auth.isLoggedIn) next({ name: 'register' });
+    if (to.meta.requiresAuth && !auth.isLoggedIn) next({ name: 'register', params : {'register' : true}  });
     else next();
+
+    if(to.meta.requiresAuth && to.meta.permissions){
+        console.log(can(to.meta.permissions.action,to.meta.permissions.subject));
+        if(can(to.meta.permissions.action,to.meta.permissions.subject)){
+            next({name : to.name});
+        } else {
+            next({name : 'login'});
+        }
+    }
 });
 
 export default router;

@@ -179,7 +179,7 @@ function handleImageUpload(e) {
 }
 
 async function handleSubmit() {
-  if(can('add','product') || can('edit','product') ){
+  // if(can('add','product') || can('edit','product') ){
     const formData = new FormData();
     formData.append('title', title.value);
     formData.append('description', description.value);
@@ -249,10 +249,10 @@ async function handleSubmit() {
         console.log(err);
       }
     }
-  } else {
-    router.push({name :'login'});
-    userStore.loggedIn = false;
-    toastr.error('Unauthorized','Error');
-  }
+  // } else {
+  //   router.push({name :'login'});
+  //   userStore.loggedIn = false;
+  //   toastr.error('Unauthorized','Error');
+  // }
 }
 </script>
