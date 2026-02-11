@@ -3,6 +3,7 @@ import product from "../component/product.vue";
 import Add_product from "../component/add_product.vue";
 import Login from "../component/login.vue";
 import Cart from "../component/cart.vue";
+import CheckoutSuccess from "../component/CheckoutSuccess.vue";
 import { User } from "@/store";
 import { useAbility } from "@casl/vue";
 import { rule } from "postcss";
@@ -61,6 +62,12 @@ const routes = [
             requiresAuth: true
         }
     }
+    ,
+    {
+        path: '/checkout/success',
+        name: 'checkout_success',
+        component: CheckoutSuccess,
+    }
 ];
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -70,17 +77,16 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     const {can} = useAbility();
     const auth = User();
-    if (to.meta.requiresAuth && !auth.isLoggedIn) next({ name: 'register', params : {'register' : true}  });
-    else next();
-
-    if(to.meta.requiresAuth && to.meta.permissions){
-        console.log(can(to.meta.permissions.action,to.meta.permissions.subject));
-        if(can(to.meta.permissions.action,to.meta.permissions.subject)){
-            next({name : to.name});
-        } else {
-            next({name : 'login'});
+    if (to.meta.requiresAuth && !auth.isLoggedIn) return next({ name: 'register', params : {'register' : true}  });
+    else {
+        if(to.meta.requiresAuth && to.meta.permissions){
+            if(!can(to.meta.permissions.action,to.meta.permissions.subject)){
+                return next({name : 'login'});
+            }
         }
+        return next();
     }
+
 });
 
 export default router;

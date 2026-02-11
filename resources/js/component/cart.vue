@@ -1,5 +1,5 @@
 <template>
-  <div class="modern-product-listing">
+  <div class="modern-product-listing cart-page-wrapper">
     <div class="modern-product-listing__filter"
       style="display: flex; justify-content: center; align-items: center; margin-bottom: 2.5rem;">
       <div class="moder-product-filter">
@@ -24,13 +24,18 @@
           " />
       </div>
     </div>
-    <div class="modern-product-listing__grid">
-      <div class="modern-product-card" v-for="products in filteredProducts" :key="products.id">
+    <div class="modern-product-listing__grid" style="padding-bottom: 110px;">
+      <!-- Added padding-bottom to prevent card content being covered by footer -->
+      <div class="modern-product-card"
+          v-for="products in filteredProducts" 
+          :key="products.id"
+          style="display: flex; flex-direction: column; height: 100%; position: relative;"
+      >
         <div class="modern-product-card__img-wrapper">
           <img :src="`/storage/${products.product.image}`" :alt="products.product.title"
             class="modern-product-card__img" loading="lazy" />
         </div>
-        <div class="modern-product-card__body">
+        <div class="modern-product-card__body" style="flex: 1;">
           <h3 class="modern-product-card__title">{{ products.product.title }}</h3>
           <p class="modern-product-card__desc" :title="products.product.description">
             {{
@@ -41,7 +46,9 @@
             }}
           </p>
         </div>
-        <div class="modern-product-card__footer">
+        <!-- Card footer sits at bottom of card (NOT sticky/fixed/absolute in viewport) --> 
+        <div class="modern-product-card__footer card-footer-overhaul" 
+          style="margin-top: auto; background: #fff; z-index: 1; border-top: 1px solid #f2f2f2;">
           <span class="modern-product-card__price">
             {{ '$' + products.price * products.quantitty }}
           </span>
@@ -49,7 +56,7 @@
             <button @click="decreaseQuantity(products.id)" class="modern-btn modern-btn--subtract"
               aria-label="Descrease Product" :disabled="products.quantitty === 0">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="#e52727d1">
-                <rect x="5" y="11" width="100" height="3" r="5" fill="#fff" />
+                <rect x="5" y="11" width="14" height="3" rx="1.5" fill="#fff" />
               </svg>
             </button>
             <span class="modern-btn modern-btn--quantity" title="Delete product">{{ products.quantitty }}</span>
@@ -71,6 +78,39 @@
             fill="#94a3b8" />
         </svg>
         <p>No products found.</p>
+      </div>
+    </div>
+    <!-- Fixed/floating Checkout Footer, never overlaps cards -->
+    <div v-if="filteredProducts.length > 0" class="cart-checkout-footer">
+      <div class="cart-checkout-footer-inner">
+        <div class="cart-total-amount-emoji">
+          <div class="cart-total-amount-emoji-insider" style="display: flex;gap: 8px;">
+            <span class="show-total-text">
+              <span aria-hidden="true" style="margin-right: 2px; font-size: 1.25em;">💵</span>
+              Total
+            </span>
+            <span class="show-total-amount">
+              ${{ 
+                filteredProducts.reduce((total, product) => {
+                  return total + ((product.price || 0) * (product.quantitty || 0));
+                }, 0)
+              }}
+            </span>
+          </div>
+          <div>
+            <a style="text-decoration: none;"
+              target="_blank"
+              class="modern-btn modern-btn--checkout enhanced liquid-bg"
+              @click="proceedToCheckout"
+            > 
+            <span class="liquid-effect" aria-hidden="true"></span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="vertical-align: middle; margin-right: 7px; z-index: 2; position: relative;">
+              <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm0 2zm10-2c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2zm0 2zm1.83-3.25l1.6-7.59A1 1 0 0 0 19.45 7H6.21l-.94-2.34A1.003 1.003 0 0 0 4.3 4H2v2h1.3l3.6 8.59-1.35 2.44c-.08.15-.15.32-.15.51 0 .55.45 1 1 1h12v-2h-11.1c.04-.13.14-.25.18-.38l.93-1.69h7.43c.81 0 1.52-.52 1.77-1.25zm-2.19-1.75H8.53L7.16 9h10.09l-1.22 5z" fill="#fff"/>
+            </svg>
+            <span style="position: relative; z-index: 2;">Checkout</span>
+          </a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -138,7 +178,28 @@ const filteredProducts = computed(() => {
   });
 });
 
-onMounted(() => {
+async function proceedToCheckout() {
+  try {
+    const items = filteredProducts.value.map(p => ({
+      price: p.price,
+      quantitty: p.quantitty,
+      product: p.product
+    }));
+
+    const res = await axios.post('/api/create-checkout-session', { items });
+    console.log(res.data.url);
+    if (res.data && res.data.url) {
+      window.location = res.data.url;
+    } else {
+      toastr.error('Unable to start checkout.');
+    }
+  } catch (err) {
+    console.error(err);
+    toastr.error('Checkout failed.');
+  }
+}
+
+onMounted(() => { 
   if (typedInput.value) {
     typed = new Typed(typedInput.value, {
       strings: [
@@ -153,5 +214,4 @@ onMounted(() => {
     });
   }
 })
-
 </script>

@@ -1,6 +1,7 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\productController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -31,5 +32,8 @@ Route::middleware(['web'])->group(function () {
     Route::post('/product/create', [productController::class, 'create'])
         ->middleware('permission:add-product')
         ->name('api.product.create');
+
+    // Create Stripe Checkout Session
+    Route::post('/create-checkout-session', [CheckoutController::class, 'createSession'])->name('api.checkout.create');
 });
 ?>
