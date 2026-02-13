@@ -16,6 +16,7 @@ class CartProduct extends Model
         'user_id',
         'quantitty',
         'price',
+        'status',
     ];
 
     // This should be a belongsTo, not belongsToMany, since each CartProduct references one Product by product_id.

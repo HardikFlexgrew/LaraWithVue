@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Stripe\StripeClient;
+use App\Models\CartProduct;
 
 class CheckoutController extends Controller
 {
@@ -21,12 +22,15 @@ class CheckoutController extends Controller
             } 
 
             $line_items = [];
+
             foreach ($items as $item) {
                 $price = isset($item['price']) ? (int) round(floatval($item['price']) * 100) : 0;
                 $quantity = isset($item['quantitty']) ? (int) $item['quantitty'] : (int) ($item['quantity'] ?? 1);
                 $product = $item['product'] ?? [];
                 $name = $product['title'] ?? 'Product';
                 $description = $product['description'] ?? null;
+                $cartId = isset($item['cartId']) ? $item['cartId'] : 0;
+                $userId = isset($item['userId']) ? $item['userId'] : 0;
 
                 if ($price <= 0) {
                     continue; // Skip items with invalid pricing
@@ -36,7 +40,6 @@ class CheckoutController extends Controller
                     'price_data' => [
                         'currency' => 'usd',
                         'product_data' => [
-                            'id' => $product['id'],
                             'name' => $name,
                             'description' => $description,
                         ],
@@ -58,17 +61,39 @@ class CheckoutController extends Controller
             $stripe = new StripeClient($secret);
 
             $session = $stripe->checkout->sessions->create([
-                'payment_method_types' => ['card'],
+                'payment_method_types' => ['card'], 
                 'line_items' => $line_items,
                 'mode' => 'payment',
                 'success_url' => url('/checkout/success?session_id={CHECKOUT_SESSION_ID}'),
                 'cancel_url' => url('/checkout/cancel'),
             ]);
 
-            return response()->json(['url' => $session->url]);
+            if($session->url){
+                $cart = CartProduct::find($cartId);
+                foreach ($cart as $cartInfo) {
+                    $cartInfo->status = 2;
+                    $cartInfo->save();
+                }
+            }
+            return response()->json(['url' => $session->url]);  
         } catch (\Exception $e) {
             \Log::error('Checkout error: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function setStatus(Request $request){
+        if(!empty($request->sessionId)){
+            $secret = env('STRIPE_SECRET');
+            if (empty($secret)) {
+                return response()->json(['error' => 'Stripe secret not configured'], 500);
+            }
+
+            $stripe = new StripeClient($secret);
+            
+            $items = $stripe->checkout->sessions->allLineItems($sessionId);
+           
+            return $items;
         }
     }
 }

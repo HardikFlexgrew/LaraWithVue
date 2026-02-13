@@ -45,7 +45,7 @@ export const cartProducts = defineStore("handleProduct",{
             const currentUser = User();
             const userId = currentUser?.user?.id;
             if (!userId) return 0;
-            return state.cartDetails.filter((detail) => detail.user_id == userId).length;
+            return state.cartDetails.filter((detail) => detail.user_id == userId && detail.status == "1").length;
         }
     },
     actions : {

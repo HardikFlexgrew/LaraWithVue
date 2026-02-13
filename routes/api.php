@@ -35,5 +35,6 @@ Route::middleware(['web'])->group(function () {
 
     // Create Stripe Checkout Session
     Route::post('/create-checkout-session', [CheckoutController::class, 'createSession'])->name('api.checkout.create');
+    Route::get('/set-status-cart-item',[CheckoutController::class, 'setStatus'])->name('api.checkout.set-status');
 });
 ?>

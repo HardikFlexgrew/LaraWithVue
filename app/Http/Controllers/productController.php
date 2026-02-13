@@ -180,6 +180,7 @@ class productController extends Controller
                 'product_id' => $productId,
                 'user_id' => Auth::user()->id, 
                 'quantitty' => 1, 
+                'status' => 1,
                 'price' => $productPrice->price,
             ]);
         }

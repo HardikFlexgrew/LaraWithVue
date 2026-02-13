@@ -134,8 +134,32 @@ const operations = { operation: '' };
 const filterText = ref('');
 const typedInput = ref(null);
 const filterPlaceholder = ref();
-
 let typed = null;
+
+async function getCartProduct() {
+  const res = await axios.get('/api/product/cart/show');
+  cartProduct.cartDetails.push(res.data.products);
+  res.data.products.map((e)=>{
+    cartProduct.cartItems.push(e.product);
+  });
+}
+
+onMounted(async () => { 
+  getCartProduct();
+  if (typedInput.value) {
+    typed = new Typed(typedInput.value, {
+      strings: [
+        'Search by product descriptions, prices...',
+        'Search products...'
+      ],
+      typeSpeed: 80,
+      backSpeed: 60,
+      attr: 'placeholder',
+      bindInputFocusEvents: true,
+      loop: true
+    });
+  }
+});
 
 async function decreaseQuantity(productId) {
   const firstItemObject = [cartProduct.cartDetails];
@@ -167,27 +191,37 @@ async function increaseQuantity(productId) {
 const filteredProducts = computed(() => {
   const term = filterText.value.trim().toLowerCase();
   if (!term) return cartProduct.cartDetails.filter((cartDetail)=>{
-    return cartDetail.user_id == userStore.user.id
+    return cartDetail.user_id == userStore?.user?.id && cartDetail.status == 1
   });
   return cartProduct.cartDetails.filter(products => {
     return (
-      (products.product.title && products.product.title.toLowerCase().includes(term)) ||
+      ((products.product.title && products.product.title.toLowerCase().includes(term)) ||
       (products.product.description && products.product.description.toLowerCase().includes(term)) || 
-      (products.product.price && products.product.price.toLowerCase().includes(term))
+      (products.product.price && products.product.price.toLowerCase().includes(term))) && products.status == 1
     );
   });
 });
 
 async function proceedToCheckout() {
   try {
+    let cartIds = [];
+    let userIds = [];
+
+    filteredProducts.value.map((p)=>{
+      cartIds.push(p.id);
+      userIds.push(p.user_id);
+    });
+
     const items = filteredProducts.value.map(p => ({
+      cartId : cartIds,
+      userId : userIds,
       price: p.price,
       quantitty: p.quantitty,
-      product: p.product
+      product: p.product,
     }));
-
+    
     const res = await axios.post('/api/create-checkout-session', { items });
-    console.log(res.data.url);
+    
     if (res.data && res.data.url) {
       window.location = res.data.url;
     } else {
@@ -199,19 +233,4 @@ async function proceedToCheckout() {
   }
 }
 
-onMounted(() => { 
-  if (typedInput.value) {
-    typed = new Typed(typedInput.value, {
-      strings: [
-        'Search by product descriptions, prices...',
-        'Search products...'
-      ],
-      typeSpeed: 80,
-      backSpeed: 60,
-      attr: 'placeholder',
-      bindInputFocusEvents: true,
-      loop: true
-    });
-  }
-})
 </script>
