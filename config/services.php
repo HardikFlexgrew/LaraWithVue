@@ -19,8 +19,8 @@ return [
     ],
 
     'stripe' => [
-        'key' => env('pk_test_51Sm89fRxuB1hPFrkA7jQScbgxFWlf1aXBIEnparxb5KE3CgcLpL6GBEUG6LhsgOvXinLLltdbLIK3GVYt09Rg8Ux00LxzJAKbC'),
-        'secret' => env('sk_test_51Sm89fRxuB1hPFrkxeg4lih9XGfTYnv8C1GzwFegeF4rkKApQMAFtgWRrMSs7Zvgkm9WehPXCiCVrusKCQmq37ey00WMMNhulX'),
+        'key'=>env('STRIPE_PUB_KEY'),
+        'secret'=>env('STRIPE_SECRET'),
     ],
 
     'resend' => [

@@ -138,10 +138,13 @@ let typed = null;
 
 async function getCartProduct() {
   const res = await axios.get('/api/product/cart/show');
-  cartProduct.cartDetails.push(res.data.products);
-  res.data.products.map((e)=>{
-    cartProduct.cartItems.push(e.product);
-  });
+  // console.log(res);
+  if(res.data.success){
+    cartProduct.cartDetails.push(res.data.products);
+    res.data.products.map((e)=>{
+      cartProduct.cartItems.push(e.product);
+    });
+  }
 }
 
 onMounted(async () => { 
@@ -195,9 +198,9 @@ const filteredProducts = computed(() => {
   });
   return cartProduct.cartDetails.filter(products => {
     return (
-      ((products.product.title && products.product.title.toLowerCase().includes(term)) ||
-      (products.product.description && products.product.description.toLowerCase().includes(term)) || 
-      (products.product.price && products.product.price.toLowerCase().includes(term))) && products.status == 1
+      ((products.product?.title && products.product?.title.toLowerCase().includes(term)) ||
+      (products.product?.description && products.product?.description.toLowerCase().includes(term)) || 
+      (products.product?.price && products.product?.price.toLowerCase().includes(term))) && products?.user_id == userStore?.user?.id && products?.status == 1
     );
   });
 });
@@ -219,7 +222,6 @@ async function proceedToCheckout() {
       quantitty: p.quantitty,
       product: p.product,
     }));
-    
     const res = await axios.post('/api/create-checkout-session', { items });
     
     if (res.data && res.data.url) {

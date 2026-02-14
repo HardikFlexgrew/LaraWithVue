@@ -46,6 +46,9 @@ class CheckoutController extends Controller
                         'unit_amount' => $price,
                     ],
                     'quantity' => max(1, $quantity),
+                    'metadata' => [
+                        'cartId' => implode(',',$cartId),
+                    ]
                 ];
             }
 
@@ -53,7 +56,8 @@ class CheckoutController extends Controller
                 return response()->json(['error' => 'No valid items for checkout'], 400);
             }
 
-            $secret = env('STRIPE_SECRET');
+            $secret = env('STRIPE_SECRET') ?? config('services.stripe.secret');
+
             if (empty($secret)) {
                 return response()->json(['error' => 'Stripe secret not configured'], 500);
             }
@@ -66,15 +70,8 @@ class CheckoutController extends Controller
                 'mode' => 'payment',
                 'success_url' => url('/checkout/success?session_id={CHECKOUT_SESSION_ID}'),
                 'cancel_url' => url('/checkout/cancel'),
-            ]);
+            ]); 
 
-            if($session->url){
-                $cart = CartProduct::find($cartId);
-                foreach ($cart as $cartInfo) {
-                    $cartInfo->status = 2;
-                    $cartInfo->save();
-                }
-            }
             return response()->json(['url' => $session->url]);  
         } catch (\Exception $e) {
             \Log::error('Checkout error: ' . $e->getMessage());
@@ -82,18 +79,31 @@ class CheckoutController extends Controller
         }
     }
 
-    public function setStatus(Request $request){
-        if(!empty($request->sessionId)){
-            $secret = env('STRIPE_SECRET');
-            if (empty($secret)) {
-                return response()->json(['error' => 'Stripe secret not configured'], 500);
-            }
+    public function setStatus($sessionId){
+        try{
+            if(!empty($sessionId)){
+                $secret = env('STRIPE_SECRET') ?? config('services.stripe.secret');
+                if (empty($secret)) {
+                    return response()->json(['error' => 'Stripe secret not configured'], 500);
+                }
 
-            $stripe = new StripeClient($secret);
-            
-            $items = $stripe->checkout->sessions->allLineItems($sessionId);
-           
-            return $items;
+                $stripe = new StripeClient($secret);
+                
+                $items = $stripe->checkout->sessions->retrieve($sessionId);
+
+                if($items){ 
+                    $payIntent = $stripe->paymentIntents->retrieve($items->payment_intent);
+                } 
+
+                return response()->json([
+                    'success' => true,
+                    'orderedItem' => $payIntent
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }
