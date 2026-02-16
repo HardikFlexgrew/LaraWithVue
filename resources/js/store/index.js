@@ -45,7 +45,17 @@ export const cartProducts = defineStore("handleProduct",{
             const currentUser = User();
             const userId = currentUser?.user?.id;
             if (!userId) return 0;
-            return state.cartDetails.filter((detail) => detail.user_id == userId && detail.status == "1").length;
+            return state.cartDetails.map((cartDetail) => {
+                // If cartDetail is an array, filter; otherwise, return matching object in array
+                if (Array.isArray(cartDetail)) {
+                  return cartDetail.filter(cartItem => cartItem.user_id == currentUser?.user?.id);
+                } else if (cartDetail && typeof cartDetail === 'object') {
+                  // If it's a single object, wrap in array if user matches
+                  return cartDetail.user_id == currentUser?.user?.id ? [cartDetail] : [];
+                } else {
+                  return [];
+                }
+              });
         }
     },
     actions : {

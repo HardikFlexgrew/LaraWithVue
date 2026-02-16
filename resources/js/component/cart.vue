@@ -26,23 +26,32 @@
     </div>
     <div class="modern-product-listing__grid" style="padding-bottom: 110px;">
       <!-- Added padding-bottom to prevent card content being covered by footer -->
-      <div class="modern-product-card"
-          v-for="products in filteredProducts" 
-          :key="products.id"
+      <div v-if="cartProduct?.cartDetails[0]?.length <= 0" class="modern-product-listing__empty">
+        <svg width="80" height="80" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="16" fill="#e0f2fe" />
+          <path
+            d="M12 21.5V14.5c0-.28.22-.5.5-.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5c-.28 0-.5-.22-.5-.5zm5 0V14.5c0-.28.22-.5.5-.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5c-.28 0-.5-.22-.5-.5zm5 0V14.5c0-.28.22-.5.5-.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5c-.28 0-.5-.22-.5-.5z"
+            fill="#94a3b8" />
+        </svg>
+        <p>No products found.</p>
+      </div>
+      <div v-else class="modern-product-card"
+          v-for="products in filteredProducts[0]" 
+          :key="products?.id"
           style="display: flex; flex-direction: column; height: 100%; position: relative;"
       >
         <div class="modern-product-card__img-wrapper">
-          <img :src="`/storage/${products.product.image}`" :alt="products.product.title"
+          <img :src="`/storage/${products.product?.image}`" :alt="products.product?.title"
             class="modern-product-card__img" loading="lazy" />
         </div>
         <div class="modern-product-card__body" style="flex: 1;">
-          <h3 class="modern-product-card__title">{{ products.product.title }}</h3>
-          <p class="modern-product-card__desc" :title="products.product.description">
+          <h3 class="modern-product-card__title">{{ products.product?.title }}</h3>
+          <p class="modern-product-card__desc" :title="products.product?.description">
             {{
-              products.product.description &&
-              products.product.description.length > 80
-                ? products.product.description.substring(0, 80) + '...'
-                : products.product.description
+              products.product?.description &&
+              products.product?.description?.length > 80
+                ? products.product?.description.substring(0, 80) + '...'
+                : products.product?.description
             }}
           </p>
         </div>
@@ -50,17 +59,17 @@
         <div class="modern-product-card__footer card-footer-overhaul" 
           style="margin-top: auto; background: #fff; z-index: 1; border-top: 1px solid #f2f2f2;">
           <span class="modern-product-card__price">
-            {{ '$' + products.price * products.quantitty }}
+            {{ '$' + products?.price * products?.quantitty }}
           </span>
           <div class="modern-product-card__actions">
-            <button @click="decreaseQuantity(products.id)" class="modern-btn modern-btn--subtract"
-              aria-label="Descrease Product" :disabled="products.quantitty === 0">
+            <button @click="decreaseQuantity(products?.id)" class="modern-btn modern-btn--subtract"
+              aria-label="Descrease Product" :disabled="products?.quantitty === 0">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="#e52727d1">
                 <rect x="5" y="11" width="14" height="3" rx="1.5" fill="#fff" />
               </svg>
             </button>
-            <span class="modern-btn modern-btn--quantity" title="Delete product">{{ products.quantitty }}</span>
-            <button class="modern-btn modern-btn--addition" @click="increaseQuantity(products.id)"
+            <span class="modern-btn modern-btn--quantity" title="Delete product">{{ products?.quantitty }}</span>
+            <button class="modern-btn modern-btn--addition" @click="increaseQuantity(products?.id)"
               aria-label="Increase Product">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <rect x="8" y="3" width="5" height="15" rx="2" fill="#fff" />
@@ -70,18 +79,9 @@
           </div>
         </div>
       </div>
-      <div v-if="!cartProduct?.CartItemCountByUser" class="modern-product-listing__empty">
-        <svg width="80" height="80" viewBox="0 0 36 36">
-          <circle cx="18" cy="18" r="16" fill="#e0f2fe" />
-          <path
-            d="M12 21.5V14.5c0-.28.22-.5.5-.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5c-.28 0-.5-.22-.5-.5zm5 0V14.5c0-.28.22-.5.5-.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5c-.28 0-.5-.22-.5-.5zm5 0V14.5c0-.28.22-.5.5-.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5c-.28 0-.5-.22-.5-.5z"
-            fill="#94a3b8" />
-        </svg>
-        <p>No products found.</p>
-      </div>
     </div>
     <!-- Fixed/floating Checkout Footer, never overlaps cards -->
-    <div v-if="filteredProducts.length > 0" class="cart-checkout-footer">
+    <div v-if="cartProduct?.cartDetails[0]?.length > 0" class="cart-checkout-footer">
       <div class="cart-checkout-footer-inner">
         <div class="cart-total-amount-emoji">
           <div class="cart-total-amount-emoji-insider" style="display: flex;gap: 8px;">
@@ -91,7 +91,7 @@
             </span>
             <span class="show-total-amount">
               ${{ 
-                filteredProducts.reduce((total, product) => {
+                cartProduct.cartDetails[0].reduce((total, product) => {
                   return total + ((product.price || 0) * (product.quantitty || 0));
                 }, 0)
               }}
@@ -137,8 +137,9 @@ const filterPlaceholder = ref();
 let typed = null;
 
 async function getCartProduct() {
+  cartProduct.cartDetails = []
+  cartProduct.cartItems = []
   const res = await axios.get('/api/product/cart/show');
-  // console.log(res);
   if(res.data.success){
     cartProduct.cartDetails.push(res.data.products);
     res.data.products.map((e)=>{
@@ -146,7 +147,6 @@ async function getCartProduct() {
     });
   }
 }
-
 onMounted(async () => { 
   getCartProduct();
   if (typedInput.value) {
@@ -164,18 +164,47 @@ onMounted(async () => {
   }
 });
 
+const filteredProducts = computed(() => {
+  const term = filterText.value.trim().toLowerCase();
+  if (!term) {
+    // cartDetails might be an array of objects, not arrays.
+    // If so, we should not use filter() directly.
+    return cartProduct.cartDetails.map((cartDetail) => {
+      // If cartDetail is an array, filter; otherwise, return matching object in array
+      if (Array.isArray(cartDetail)) {
+        return cartDetail.filter(cartItem => cartItem.user_id == userStore?.user?.id);
+      } else if (cartDetail && typeof cartDetail === 'object') {
+        // If it's a single object, wrap in array if user matches
+        return cartDetail.user_id == userStore?.user?.id ? [cartDetail] : [];
+      } else {
+        return [];
+      }
+    });
+  }
+  
+  return cartProduct.cartDetails.map((cartDetail) => {  
+    return cartDetail.filter(products => {
+      return (
+        ((products.product?.title && products.product?.title.toLowerCase().includes(term)) ||
+        (products.product?.description && products.product?.description.toLowerCase().includes(term)) || 
+        (products.product?.price && products.product?.price.toLowerCase().includes(term))) && products?.user_id == userStore?.user?.id && products?.status == 1
+      );
+    });
+  })
+});
+
 async function decreaseQuantity(productId) {
   const firstItemObject = [cartProduct.cartDetails];
-  firstItemObject.forEach(element => {
+  filteredProducts.value.forEach(element => {
     selectedProduct = element.find(product => product.id == productId);
   });
   selectedProduct.quantitty -= 1;
   if (selectedProduct.quantitty == 0) {
     const res = await axios.post(`/api/product/cart/remove/${productId}`);
     if(res.data.success){
-      const idx = cartProduct.cartDetails.findIndex((product)=>product.id == productId);
-      cartProduct.cartDetails.splice(idx,1);
-      cartProduct.cartItems.splice(idx,1);
+      const idx = cartProduct.cartDetails[0].findIndex((product)=>product.id == productId);
+      cartProduct.cartDetails[0].splice(idx,1);
+      cartProduct.cartItems?.splice(idx,1);
     }
   } else {
     const res = await axios.post(`/api/product/cart/operation/${productId}`, selectedProduct);
@@ -184,40 +213,24 @@ async function decreaseQuantity(productId) {
 
 async function increaseQuantity(productId) {
   const firstItemObject = [cartProduct.cartDetails];
-  firstItemObject.forEach(element => {
+  filteredProducts.value.forEach(element => {
     selectedProduct = element.find(product => product.id == productId);
   });
   selectedProduct.quantitty += 1;
   const res = await axios.post(`/api/product/cart/operation/${productId}`, selectedProduct);
 }
 
-const filteredProducts = computed(() => {
-  const term = filterText.value.trim().toLowerCase();
-  if (!term) return cartProduct.cartDetails.filter((cartDetail)=>{
-    return cartDetail.user_id == userStore?.user?.id && cartDetail.status == 1
-  });
-  return cartProduct.cartDetails.filter(products => {
-    return (
-      ((products.product?.title && products.product?.title.toLowerCase().includes(term)) ||
-      (products.product?.description && products.product?.description.toLowerCase().includes(term)) || 
-      (products.product?.price && products.product?.price.toLowerCase().includes(term))) && products?.user_id == userStore?.user?.id && products?.status == 1
-    );
-  });
-});
-
 async function proceedToCheckout() {
   try {
     let cartIds = [];
     let userIds = [];
-
-    filteredProducts.value.map((p)=>{
+    filteredProducts.value[0].forEach((p)=>{
       cartIds.push(p.id);
       userIds.push(p.user_id);
     });
-
-    const items = filteredProducts.value.map(p => ({
-      cartId : cartIds,
-      userId : userIds,
+    const items = cartProduct.cartDetails[0].map(p => ({
+      cartId : cartIds, 
+      userId : userIds, 
       price: p.price,
       quantitty: p.quantitty,
       product: p.product,

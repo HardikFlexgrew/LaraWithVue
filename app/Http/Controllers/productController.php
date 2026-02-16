@@ -195,14 +195,14 @@ class productController extends Controller
         } else {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to add product to cart.'
+                'message' => 'Failed to add product to cart.'   
             ], 500);
         }
         
     }
 
     public function showCartProduct(){
-        $data = CartProduct::with('product')->orderBy('id','desc')->where('user_id', Auth::user()->id)->get()->toArray();
+        $data = CartProduct::with('product')->orderBy('id','desc')->where('user_id', Auth::user()->id)->where('status',1)->get()->toArray();
         return response()->json([
             'success' => true,
             'products' => $data

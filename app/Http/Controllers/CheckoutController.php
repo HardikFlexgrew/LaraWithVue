@@ -46,9 +46,6 @@ class CheckoutController extends Controller
                         'unit_amount' => $price,
                     ],
                     'quantity' => max(1, $quantity),
-                    'metadata' => [
-                        'cartId' => implode(',',$cartId),
-                    ]
                 ];
             }
 
@@ -68,6 +65,9 @@ class CheckoutController extends Controller
                 'payment_method_types' => ['card'], 
                 'line_items' => $line_items,
                 'mode' => 'payment',
+                'metadata' => [
+                    'cartIds' =>implode(',',$cartId) 
+                ], 
                 'success_url' => url('/checkout/success?session_id={CHECKOUT_SESSION_ID}'),
                 'cancel_url' => url('/checkout/cancel'),
             ]); 
@@ -93,6 +93,14 @@ class CheckoutController extends Controller
 
                 if($items){ 
                     $payIntent = $stripe->paymentIntents->retrieve($items->payment_intent);
+                    if($payIntent->status == "succeeded"){
+                        $cartId = explode(',',$items->metadata->cartIds);
+                        $cartItems = CartProduct::find($cartId);
+                        foreach($cartItems as $cartItem){
+                            $cartItem->status = 2;
+                            $cartItem->save();
+                        }
+                    }
                 } 
 
                 return response()->json([
