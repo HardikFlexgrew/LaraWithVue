@@ -66,7 +66,7 @@ class CheckoutController extends Controller
                 'line_items' => $line_items,
                 'mode' => 'payment',
                 'metadata' => [
-                    'cartIds' =>implode(',',$cartId) 
+                    'cartIds' =>json_encode($cartId) 
                 ], 
                 'success_url' => url('/checkout/success?session_id={CHECKOUT_SESSION_ID}'),
                 'cancel_url' => url('/checkout/cancel'),
@@ -94,11 +94,10 @@ class CheckoutController extends Controller
                 if($items){ 
                     $payIntent = $stripe->paymentIntents->retrieve($items->payment_intent);
                     if($payIntent->status == "succeeded"){
-                        $cartId = explode(',',$items->metadata->cartIds);
-                        $cartItems = CartProduct::find($cartId);
-                        foreach($cartItems as $cartItem){
-                            $cartItem->status = 2;
-                            $cartItem->save();
+                        $cartId = json_decode($items->metadata->cartIds);
+                        $cartItems = CartProduct::whereIn('id',$cartId)->update(['status' => 2]);
+                        if($cartItems > 0){
+                            
                         }
                     }
                 } 

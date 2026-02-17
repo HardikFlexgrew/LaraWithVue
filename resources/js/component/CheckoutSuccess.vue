@@ -16,9 +16,8 @@ onMounted(async () => {
   // Show a simple toast-only success message
   if(sessionId != ''){
     const res = await axios.get(`/api/set-status-cart-item/${sessionId}`);
-    console.log(res);
     toastr.success('Payment successful. Thank you!');
-    setTimeout(() => router.push({ name: 'product' }), 1200);
+    router.push({ name: 'product' });
   }
 });
 </script>

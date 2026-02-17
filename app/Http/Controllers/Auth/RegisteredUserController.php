@@ -13,6 +13,7 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
+use App\Models\Country;
 
 
 class RegisteredUserController extends Controller
@@ -37,12 +38,15 @@ class RegisteredUserController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
                 'password' => ['required', 'confirmed', Rules\Password::defaults()],
+                'address' => 'required|string',
+                'country' => 'required',
             ]);
 
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
+                'address' => $request->address,
             ]);
         
             event(new Registered($user));
@@ -63,5 +67,14 @@ class RegisteredUserController extends Controller
                 'message' => $e
             ]);
         }   
+    }
+
+    public function getCountry($country){
+        if($country){
+            $countries = Country::all();
+            return response()->josn([
+                'countries' => $countries
+            ]);
+        }
     }
 }

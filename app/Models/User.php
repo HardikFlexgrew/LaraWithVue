@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Country;
 
 class User extends Authenticatable
 {
@@ -22,6 +23,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'address',
+        'city',
+        'state',
+        'country_id',
     ];
 
     /**
@@ -49,5 +54,9 @@ class User extends Authenticatable
 
     public function cartProducts(){
         return $this->hasOne(CartProduct::class);
+    }
+
+    public function country(){
+        return $this->belongsTo(Country::class,'countries_id');
     }
 }
