@@ -436,7 +436,7 @@
 }
 
 .form-group {
-    margin-bottom: 1.1em;
+    margin-bottom: 1em;
 }
 
 .login-label {
@@ -452,7 +452,6 @@
     border: 1px solid #afe4f6;
     border-radius: 6px;
     background: #fafdfe;
-    margin-bottom: 0.29em;
     font-size: 1.07em;
     outline: none;
     transition: border 0.2s;
@@ -497,6 +496,12 @@
     display: flex;
     font-weight: 600;
     align-items: center;
+}
+
+.login-error{
+    width: 300px;
+    height: 11px;
+    font-size: 14px;
 }
 
 .login-error-general {
@@ -1144,8 +1149,6 @@
     transition: border-color .22s;
     color: #334155;
     font-size: 1.09rem;
-    margin-top: .2em;
-    margin-bottom: 0.08em;
 }
 
 .login-input:focus {
@@ -1158,7 +1161,6 @@
     display: flex;
     flex-direction: row;
     gap: 1em;
-    margin-bottom: 0.79em;
     align-items: flex-end;
 }
 
@@ -1166,16 +1168,11 @@
     display: flex;
     flex-direction: row;
     gap: 1em;
-    margin-bottom: 0.79em;
 }
 
 .form-group-inline {
     flex: 1;
     min-width: 0;
-}
-
-.reg-password-row {
-    margin-top: 0.8em;
 }
 
 .login-btn:hover,

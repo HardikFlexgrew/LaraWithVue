@@ -222,29 +222,15 @@ async function increaseQuantity(productId) {
 
 async function proceedToCheckout() {
   try {
-    let cartIds = [];
-    let userIds = [];
-    filteredProducts.value[0].forEach((p)=>{
-      cartIds.push(p.id);
-      userIds.push(p.user_id);
-    });
-    const items = cartProduct.cartDetails[0].map(p => ({
-      cartId : cartIds, 
-      userId : userIds, 
-      price: p.price,
-      quantitty: p.quantitty,
-      product: p.product,
-    }));
-    const res = await axios.post('/api/create-checkout-session', { items });
-    
-    if (res.data && res.data.url) {
-      window.location = res.data.url;
-    } else {
-      toastr.error('Unable to start checkout.');
+    const filteredItems = cartProduct.cartDetails[0]?.filter(item => item.user_id === userStore.user.id);
+    if (!filteredItems || filteredItems.length === 0) {
+      toastr.error('Your cart is empty', 'Error');
+      return;
     }
+    router.push({ name: 'checkout' });
   } catch (err) {
     console.error(err);
-    toastr.error('Checkout failed.');
+    toastr.error('Unable to proceed to checkout.');
   }
 }
 

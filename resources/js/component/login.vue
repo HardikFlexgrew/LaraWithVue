@@ -19,28 +19,28 @@
           <div class="form-group form-group-inline">
             <label for="name" class="login-label">Name</label>
             <input type="text" id="name" v-model="name" class="login-input" placeholder="Enter your name" required autocomplete="username" />
-            <div class="login-error" v-if="errorMessage && errorMessage.name">
-              <span>
+            <div class="login-error" >
+              <span v-if="registerErrorMessage && registerErrorMessage.name">
                 <svg width="14" height="14" fill="none" viewBox="0 0 20 20" style="margin-right:0.13em;">
                   <circle cx="10" cy="10" r="9" fill="#fee2e2" />
                   <path stroke="#db6060" d="M10 6v4" />
                   <circle cx="10" cy="13.25" r=".75" fill="#db6060" />
                 </svg>
-                {{ errorMessage.name[0] }}
+                {{ registerErrorMessage.name[0] }}
               </span>
             </div>
           </div>
           <div class="form-group form-group-inline">
             <label for="email" class="login-label">Email Address</label>
             <input type="email" id="email" v-model="email" class="login-input" placeholder="Enter your email" required autocomplete="username" />
-            <div class="login-error" v-if="errorMessage && errorMessage.email">
-              <span>
+            <div class="login-error">
+              <span  v-if="registerErrorMessage && registerErrorMessage.email">
                 <svg width="14" height="14" fill="none" viewBox="0 0 20 20" style="margin-right:0.13em;">
                   <circle cx="10" cy="10" r="9" fill="#fee2e2" />
                   <path stroke="#db6060" d="M10 6v4" />
                   <circle cx="10" cy="13.25" r=".75" fill="#db6060" />
                 </svg>
-                {{ errorMessage.email[0] }}
+                {{ registerErrorMessage.email[0] }}
               </span>
             </div>
           </div>
@@ -55,16 +55,15 @@
             required
             autocomplete="address-line1"
             rows="2"
-            style="resize:vertical"
           ></textarea>
-          <div class="login-error" v-if="errorMessage && errorMessage.address">
-            <span>
+          <div class="login-error" >
+            <span v-if="registerErrorMessage && registerErrorMessage.address">
               <svg width="14" height="14" fill="none" viewBox="0 0 20 20" style="margin-right:0.13em;">
                 <circle cx="10" cy="10" r="9" fill="#fee2e2" />
                 <path stroke="#db6060" d="M10 6v4" />
                 <circle cx="10" cy="13.25" r=".75" fill="#db6060" />
               </svg>
-              {{ errorMessage.address[0] }}
+              {{ registerErrorMessage.address[0] }}
             </span>
           </div>
         </div>
@@ -80,14 +79,14 @@
               required
               autocomplete="address-level2"
             />
-            <div class="login-error" v-if="errorMessage && errorMessage.city">
-              <span>
+            <div class="login-error" >
+              <span v-if="registerErrorMessage && registerErrorMessage.city">
                 <svg width="14" height="14" fill="none" viewBox="0 0 20 20" style="margin-right:0.13em;">
                   <circle cx="10" cy="10" r="9" fill="#fee2e2" />
                   <path stroke="#db6060" d="M10 6v4" />
                   <circle cx="10" cy="13.25" r=".75" fill="#db6060" />
                 </svg>
-                {{ errorMessage.city[0] }}
+                {{ registerErrorMessage.city[0] }}
               </span>
             </div>
           </div>
@@ -102,37 +101,42 @@
               required
               autocomplete="address-level1"
             />
-            <div class="login-error" v-if="errorMessage && errorMessage.state">
-              <span>
+            <div class="login-error" >
+              <span v-if="registerErrorMessage && registerErrorMessage.state">
                 <svg width="14" height="14" fill="none" viewBox="0 0 20 20" style="margin-right:0.13em;">
                   <circle cx="10" cy="10" r="9" fill="#fee2e2" />
                   <path stroke="#db6060" d="M10 6v4" />
                   <circle cx="10" cy="13.25" r=".75" fill="#db6060" />
                 </svg>
-                {{ errorMessage.state[0] }}
+                {{ registerErrorMessage.state[0] }}
               </span>
             </div>
           </div>
           <div class="form-group form-group-inline">
             <label for="country" class="login-label">Country</label>
             <select
-              id="country"
-              v-model="country"
+              id="country_id"
+              v-model="selectedCountry"
               class="login-input"
               required
-              autocomplete="country"
+              autocomplete="country_id"
             >
-              <option value="" disabled>Select country</option>
-              <option v-for="c in countries" :key="c" :value="c">{{ c }}</option>
+              <option 
+                v-for="c in (country[0] || [])" 
+                :key="c.id" 
+                :value="c.id"
+              >
+                {{ c.country_name }}
+              </option>
             </select>
-            <div class="login-error" v-if="errorMessage && errorMessage.country">
-              <span>
+            <div class="login-error" >
+              <span v-if="registerErrorMessage && registerErrorMessage.country_id">
                 <svg width="14" height="14" fill="none" viewBox="0 0 20 20" style="margin-right:0.13em;">
                   <circle cx="10" cy="10" r="9" fill="#fee2e2" />
                   <path stroke="#db6060" d="M10 6v4" />
                   <circle cx="10" cy="13.25" r=".75" fill="#db6060" />
                 </svg>
-                {{ errorMessage.country[0] }}
+                {{ registerErrorMessage.country_id[0] }}
               </span>
             </div>
           </div>
@@ -143,14 +147,14 @@
               <label for="password" class="login-label">Password</label>
               <input type="password" id="password" name="password" v-model="password" class="login-input" placeholder="Enter password"
                 required autocomplete="current-password" />
-              <div class="login-error" v-if="errorMessage && errorMessage.password">
-                <span>
+              <div class="login-error" >
+                <span v-if="registerErrorMessage && registerErrorMessage.password">
                   <svg width="14" height="14" fill="none" viewBox="0 0 20 20" style="margin-right:0.13em;">
                     <circle cx="10" cy="10" r="9" fill="#fee2e2" />
                     <path stroke="#db6060" d="M10 6v4" />
                     <circle cx="10" cy="13.25" r=".75" fill="#db6060" />
                   </svg>
-                  {{ errorMessage.password[0] }}
+                  {{ registerErrorMessage.password[0] }}
                 </span>
               </div>
             </div>
@@ -168,14 +172,14 @@
                 placeholder="Enter confirm password"
                 required 
                 autocomplete="current-password" />
-              <div class="login-error" v-if="errorMessage && errorMessage.password_confirmation">
-                <span>
+              <div class="login-error">
+                <span v-if="registerErrorMessage && registerErrorMessage.password_confirmation">
                   <svg width="14" height="14" fill="none" viewBox="0 0 20 20" style="margin-right:0.13em;">
                     <circle cx="10" cy="10" r="9" fill="#fee2e2" />
                     <path stroke="#db6060" d="M10 6v4" />
                     <circle cx="10" cy="13.25" r=".75" fill="#db6060" />
                   </svg>
-                  {{ errorMessage.password_confirmation[0] }}
+                  {{ registerErrorMessage.password_confirmation[0] }}
                 </span>
               </div>
             </div>
@@ -187,14 +191,14 @@
         <div class="form-group">
           <label for="email" class="login-label">Email Address</label>
           <input type="email" id="email" v-model="email" class="login-input" placeholder="Enter your email" required autocomplete="username" />
-          <div class="login-error" v-if="errorMessage && errorMessage.email">
-            <span>
+          <div class="login-error">
+            <span v-if="loginErrorMessage && loginErrorMessage.email">
               <svg width="14" height="14" fill="none" viewBox="0 0 20 20" style="margin-right:0.13em;">
                 <circle cx="10" cy="10" r="9" fill="#fee2e2" />
                 <path stroke="#db6060" d="M10 6v4" />
                 <circle cx="10" cy="13.25" r=".75" fill="#db6060" />
               </svg>
-              {{ errorMessage.email[0] }}
+              {{ loginErrorMessage.email[0] }}
             </span>
           </div>
         </div>
@@ -210,14 +214,14 @@
             autocomplete="current-password"
             style="border-radius:7px"
           />
-          <div class="login-error" v-if="errorMessage && errorMessage.password">
-            <span>
+          <div class="login-error">
+            <span v-if="loginErrorMessage && loginErrorMessage.password">
               <svg width="14" height="14" fill="none" viewBox="0 0 20 20" style="margin-right:0.13em;">
                 <circle cx="10" cy="10" r="9" fill="#fee2e2" />
                 <path stroke="#db6060" d="M10 6v4" />
                 <circle cx="10" cy="13.25" r=".75" fill="#db6060" />
               </svg>
-              {{ errorMessage.password[0] }}
+              {{ loginErrorMessage.password[0] }}
             </span>
           </div>
         </div>
@@ -266,13 +270,6 @@ function reset() {
   country.value = '';
 }
 
-// static list of countries for select options - customize as required
-const countries = [
-  'United States', 'Canada', 'India', 'United Kingdom', 'Australia',
-  'Germany', 'France', 'Brazil', 'Japan', 'China',
-  // ...add more countries as needed
-];
-
 const router = useRouter()
 const userStore = User();
 const name = ref('');
@@ -282,21 +279,26 @@ const password_confirmation = ref('');
 const address = ref('');
 const state = ref('');
 const city = ref('');
-const country = ref('');
-const errorMessage = ref({})
+const country = ref([]);
+const loginErrorMessage = ref({})
+const registerErrorMessage = ref({})
 const generalError = ref('')
+const selectedCountry = ref(20);
 
 if (userStore.loggedIn) {
   router.push({ name: 'product' });
 }
 
 async function getCountry(){
-  const res = await axios.get(`/api/login/get_country`);
-  console.log(res);
+  const res = await axios.get('/api/register/get_country');
+  if(res.data.success){
+    country.value.push(res.data.countries);
+  }
 }
 
 onMounted(async ()=>{
   getCountry();
+
 });
 
 function checkPassword(e) {
@@ -322,7 +324,7 @@ async function handleRegister() {
       formData.append('address', address.value);
       formData.append('state', state.value);
       formData.append('city', city.value);
-      formData.append('country', country.value);
+      formData.append('country_id', selectedCountry.value);
 
       const res = await axios.post('/api/register', formData);
 
@@ -337,7 +339,7 @@ async function handleRegister() {
       toastr.error(err.response?.data?.message ?? 'Registration failed');
       // Optionally, you can show validation error details from backend:
       if (err.response && err.response.data && err.response.data.errors) {
-        errorMessage.value = err.response.data.errors;
+        registerErrorMessage.value = err.response.data.errors;
       }
     }
   }
@@ -362,7 +364,10 @@ async function handleLogin() {
   } catch (error) {
     router.push({ name: 'login' });
     toastr.error(error.response?.data?.message ?? 'Login failed');
-    reset()
+    console.log(error.response.data.errors)
+    if (error.response && error.response.data && error.response.data.errors) {
+      loginErrorMessage.value = error.response.data.errors;
+    }
   }
 }
 </script>

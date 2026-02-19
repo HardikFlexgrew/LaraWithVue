@@ -52,6 +52,9 @@ class LoginRequest extends FormRequest
         $credentials = $this->validate([
             'email' => 'required|email',
             'password' => 'required',
+        ],[
+            'email' => 'The email is required',
+            'password' => 'The password is required',
         ]);
         if(Auth::attempt($credentials)) $result = true;
         RateLimiter::clear($this->throttleKey());

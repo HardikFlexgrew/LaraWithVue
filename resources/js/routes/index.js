@@ -3,6 +3,7 @@ import product from "../component/product.vue";
 import Add_product from "../component/add_product.vue";
 import Login from "../component/login.vue";
 import Cart from "../component/cart.vue";
+import Checkout from "../component/checkout.vue";
 import CheckoutSuccess from "../component/CheckoutSuccess.vue";
 import { User } from "@/store";
 import { useAbility } from "@casl/vue";
@@ -58,6 +59,14 @@ const routes = [
         path: '/cart',
         name: 'cart',
         component: Cart,
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/checkout',
+        name: 'checkout',
+        component: Checkout,
         meta: {
             requiresAuth: true
         }

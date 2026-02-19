@@ -39,7 +39,14 @@ class RegisteredUserController extends Controller
                 'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
                 'password' => ['required', 'confirmed', Rules\Password::defaults()],
                 'address' => 'required|string',
-                'country' => 'required',
+                'city' => 'required',
+                'state' => 'required',
+                'country_id' => 'required',
+            ],[
+               'address' => 'The address is required', 
+               'city' => 'The city is required', 
+               'state' => 'The state is required', 
+               'country_id' => 'The country is required', 
             ]);
 
             $user = User::create([
@@ -47,8 +54,10 @@ class RegisteredUserController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'address' => $request->address,
+                'city' => $request->city,
+                'state' => $request->state,
+                'country_id' => $request->country_id
             ]);
-        
             event(new Registered($user));
 
             Auth::login($user);
@@ -69,12 +78,11 @@ class RegisteredUserController extends Controller
         }   
     }
 
-    public function getCountry($country){
-        if($country){
-            $countries = Country::all();
-            return response()->josn([
-                'countries' => $countries
-            ]);
-        }
+    public function getCountry(){
+        $countries = Country::select('id','country_name')->get();
+        return response()->json([
+            'success' => true,
+            'countries' => $countries
+        ]);
     }
 }

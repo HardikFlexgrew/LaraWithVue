@@ -13,7 +13,7 @@ Route::middleware(['web'])->group(function () {
 
     Route::post('/login' , [AuthenticatedSessionController::class , 'store'])->name('api.login');   
     Route::post('/register' , [RegisteredUserController::class , 'store'])->name('api.register');   
-    Route::get('/login/get_country' , [RegisteredUserController::class , 'getCountry'])->name('api.login.get_country');   
+    Route::get('/register/get_country' , [RegisteredUserController::class , 'getCountry']);   
     Route::get('/product/show',[productController::class, 'show'])->name('api.product.show');
    
     Route::post('/product/delete/{productId}',[productController::class, 'delete'])->name('api.product.delete');

@@ -12,7 +12,7 @@ class CheckoutController extends Controller
     /**
      * Create a Stripe Checkout Session from cart items.
      */
-    public function createSession(Request $request): JsonResponse
+    public function createSession(Request $request)
     {
         try {
             $items = $request->input('items', []);
@@ -31,7 +31,6 @@ class CheckoutController extends Controller
                 $description = $product['description'] ?? null;
                 $cartId = isset($item['cartId']) ? $item['cartId'] : 0;
                 $userId = isset($item['userId']) ? $item['userId'] : 0;
-
                 if ($price <= 0) {
                     continue; // Skip items with invalid pricing
                 }
@@ -72,7 +71,12 @@ class CheckoutController extends Controller
                 'cancel_url' => url('/checkout/cancel'),
             ]); 
 
-            return response()->json(['url' => $session->url]);  
+            // The setStatus method is being called but its return value is not used or returned, 
+            // and it's likely this will not work as intended because setStatus expects to return a response.
+            // Instead, you should return the result of setStatus or call it separately after session completion.
+            // Example fix: return the result of setStatus:
+            return $this->setStatus($session->id);
+            // return response()->json(['url' => $session->url]);  
         } catch (\Exception $e) {
             \Log::error('Checkout error: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
@@ -90,9 +94,9 @@ class CheckoutController extends Controller
                 $stripe = new StripeClient($secret);
                 
                 $items = $stripe->checkout->sessions->retrieve($sessionId);
-
                 if($items){ 
                     $payIntent = $stripe->paymentIntents->retrieve($items->payment_intent);
+                    dd($items->payment_intent);
                     if($payIntent->status == "succeeded"){
                         $cartId = json_decode($items->metadata->cartIds);
                         $cartItems = CartProduct::whereIn('id',$cartId)->update(['status' => 2]);
