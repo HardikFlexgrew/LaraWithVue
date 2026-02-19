@@ -159,115 +159,59 @@
 
             <!-- Step 3: Payment -->
             <div class="checkout-section">
-                <h2 class="section-title">Payment Method</h2>
-                
-                <div class="payment-methods">
-                    <div class="payment-option">
-                        <label class="form-label">Payment Method</label>
-                        <select
-                        id="country_id"
-                        v-model="paymentMethod"
-                        class="login-input"
-                        required
-                        autocomplete="country_id">
-                            <option :value="paymentMethod">
-                                {{ paymentMethod }}
-                            </option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Card Details Form -->
-                <div v-if="paymentMethod === 'card'" class="card-form">
-                    <div class="card-input-wrapper">
-                        <div class="form-group full-width">
-                            <label class="form-label">Card Number</label>
-                            <input 
-                                v-model="cardDetails.number" 
-                                type="text" 
-                                class="form-input" 
-                                placeholder="1234 5678 9012 3456"
-                                maxlength="19"
-                                @input="formatCardNumber"
-                            />
-                            <span v-if="errors.number" class="error-message">{{ errors.number }}</span>
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label class="form-label">Card Holder Name</label>
-                            <input 
-                                v-model="cardDetails.name" 
-                                type="text" 
-                                class="form-input" 
-                                placeholder="John Doe"
-                            />
-                            <span v-if="errors.name" class="error-message">{{ errors.name }}</span>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                              <label class="form-label">Expiry Date</label>
-                              <input 
-                              v-model="cardDetails.expiry" 
-                              type="text" 
-                              class="form-input" 
-                              placeholder="MM/YY"
-                              maxlength="5"
-                              @input="formatExpiry"
-                              />
-                              <span v-if="errors.expiry" class="error-message">{{ errors.expiry }}</span>
-                            </div>
-                            <div class="form-group">
-                              <label class="form-label">CVC</label>
-                              <input 
-                              v-model="cardDetails.cvc" 
-                              type="text" 
-                              class="form-input" 
-                              placeholder="123"
-                              maxlength="3"
-                              @input="formateCVC"
-                              />
-                              <span v-if="errors.cvc" class="error-message">{{ errors.cvc }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+              <h2 class="section-title">Payment Method</h2>
+              
+              <div class="payment-methods">
+                  <div class="payment-option">
+                      <label class="form-label">Payment Method</label>
+                      <select
+                      id="country_id"
+                      v-model="paymentMethod"
+                      class="login-input"
+                      required
+                      autocomplete="country_id">
+                          <option :value="paymentMethod">
+                              {{ paymentMethod }}
+                          </option>
+                      </select>
+                  </div>
+              </div>
 
                 <!-- Order Summary for Payment -->
-                <div class="payment-summary">
-                <h3>Order Summary</h3>
-                    <div class="summary-row">
-                        <span>Subtotal:</span>
-                        <span>${{ subtotal.toFixed(2) }}</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Shipping:</span>
-                        <span>${{ shippingCost.toFixed(2) }}</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Tax:</span>
-                        <span>${{ tax.toFixed(2) }}</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span>Total Amount:</span>
-                        <span>${{ grandTotal.toFixed(2) }}</span>
-                    </div>
-                </div>
+              <div class="payment-summary">
+              <h3>Order Summary</h3>
+                  <div class="summary-row">
+                      <span>Subtotal:</span>
+                      <span>${{ subtotal.toFixed(2) }}</span>
+                  </div>
+                  <div class="summary-row">
+                      <span>Shipping:</span>
+                      <span>${{ shippingCost.toFixed(2) }}</span>
+                  </div>
+                  <div class="summary-row">
+                      <span>Tax:</span>
+                      <span>${{ tax.toFixed(2) }}</span>
+                  </div>
+                  <div class="summary-row total">
+                      <span>Total Amount:</span>
+                      <span>${{ grandTotal.toFixed(2) }}</span>
+                  </div>
+              </div>
 
-                <div class="form-actions">
-                    <button type="button" @click="goBack" class="btn btn-secondary">
-                        Back
-                    </button>
-                    <button type="button" @click="processPayment" :disabled="isProcessing" class="btn btn-primary btn-payment">
-                      <span v-if="!isProcessing">
-                        Pay ${{ grandTotal.toFixed(2) }}
-                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" style="margin-left: 0.5rem;">
-                          <path d="M5 12l5 5L20 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      </span>
-                      <span v-else class="loading-spinner">Processing...</span>
-                    </button>
-                </div>
+              <div class="form-actions">
+                <button type="button" @click="goBack" class="btn btn-secondary">
+                    Back
+                </button>
+                <button type="button" @click="processPayment" :disabled="isProcessing" class="btn btn-primary btn-payment">
+                  <span v-if="!isProcessing">
+                    Pay ${{ grandTotal.toFixed(2) }}
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" style="margin-left: 0.5rem;">
+                      <path d="M5 12l5 5L20 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                  <span v-else class="loading-spinner">Processing...</span>
+                </button>
+              </div>
             </div>
         </form>
     </div>
@@ -276,12 +220,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter,useRoute } from 'vue-router';
 import axios from 'axios';
 import toastr from 'toastr';
 import { cartProducts, User } from '@/store';
 
 const router = useRouter();
+const route = useRoute();
 const cartProduct = cartProducts();
 const userStore = User();
 
@@ -319,7 +264,7 @@ const shippingCost = ref(0);
 
 // Computed properties
 const filteredCartItems = computed(() => {
-    return cartProduct.cartDetails[0].filter(item => item.user_id === userStore.user.id);
+  return cartProduct.cartDetails[0].filter(item => item.user_id === userStore.user.id);
 });
 
 const subtotal = computed(() => {
@@ -336,31 +281,6 @@ const grandTotal = computed(() => {
   return subtotal.value + shippingCost.value + tax.value;
 });
 
-const formatCardNumber = () => {
-  let value = cardDetails.value.number.replace(/\D/g, '');
-  let formatted = '';
-  for (let i = 0; i < value.length; i++) {
-    if (i > 0 && i % 4 === 0) {
-      formatted += ' ';
-    }
-    formatted += value[i];
-  }
-  cardDetails.value.number = formatted;
-};
-
-const formatExpiry = () => {
-  let value = cardDetails.value.expiry.replace(/\D/g, '');
-  if (value.length >= 2) {
-    value = value.substring(0, 2) + '/' + value.substring(2, 4);
-  }
-  cardDetails.value.expiry = value;
-};
-
-const formateCVC = () => {
-  let value = cardDetails.value.cvc.replace(/\D/g,'');
-  cardDetails.value.cvc = value;
-}
-
 const formatePostalCode = () => {
   let val = formData.value.postalCode.replace(/\D/g,'');
   formData.value.postalCode = val;
@@ -376,19 +296,6 @@ const validateForm = () => {
   if (!formData.value.state) {errors.value.state = 'State is required';toastr.error('State is required')};
   if (!formData.value.country) {errors.value.country = 'Country is required';toastr.error('Country is required')};
   if (!formData.value.postalCode) {errors.value.postalCode = 'Postal code is required';toastr.error('Postal code is required')};
-
-  if(!cardDetails.value.number &&!cardDetails.value.name &&!cardDetails.value.expiry &&!cardDetails.value.cvc){
-    toastr.error('Card Details is required')
-    errors.value.number = 'Card Number is required';
-    errors.value.name = 'Card name is required';
-    errors.value.expiry = 'Expiry date is required';
-    errors.value.cvc = 'CVC code is required';
-  } else {
-    if (!cardDetails.value.number) {errors.value.number = 'Card Number is required';toastr.error('Card Number is required')};
-    if (!cardDetails.value.name) {errors.value.name = 'Card name is required';toastr.error('Card name is required')};
-    if (!cardDetails.value.expiry) {errors.value.expiry = 'Expiry date is required';toastr.error('Expiry date is required')};
-    if (!cardDetails.value.cvc) {errors.value.cvc = 'CVC code is required';toastr.error('CVC code is required')};
-  }
  
   return Object.keys(errors.value).length === 0;
 };
@@ -400,50 +307,41 @@ const goBack = () => {
 const processPayment = async () => {
   let validate = validateForm();
   if(validate){
-      if (!cartProduct.cartDetails[0].length) {
-        toastr.error('Your cart is empty', 'Error');
-        return;
+    if (!cartProduct.cartDetails[0].length) {
+      toastr.error('Your cart is empty', 'Error');
+      return;
+    }
+
+    isProcessing.value = true;
+
+    try {
+      let cartIds = [];
+      filteredCartItems.value.map(items => {
+        cartIds.push(items.id);
+      });
+
+      // Prepare cart items for Stripe
+      const items = filteredCartItems.value.map(item => ({
+        cartId: cartIds,
+        quantitty: item.quantitty,
+        price: item.price,
+        product: item.product
+      }));
+
+      // Create Stripe checkout session
+      const response = await axios.post('/api/create-checkout-session', { items });
+
+      if (response.data.url) {
+        cartProduct.tempCart.push(formData.value);
+        cartProduct.tempCart.push(cardDetails.value);
+        // Redirect to Stripe checkout
+        window.location.href = response.data.url; 
       }
-
-      isProcessing.value = true;
-
-      try {
-        let cartIds = [];
-        filteredCartItems.value.map(items => {
-          cartIds.push(items.id);
-        });
-
-        // Prepare cart items for Stripe
-        const items = filteredCartItems.value.map(item => ({
-          cartId: cartIds,
-          quantitty: item.quantitty,
-          price: item.price,
-          product: item.product
-        }));
-
-        // Create Stripe checkout session
-        const response = await axios.post('/api/create-checkout-session', { items });
-
-        if (response.data.url) {
-          // Save address info before redirecting
-          await axios.post('/api/checkout-save-address', {
-            fullName: formData.value.fullName,
-            email: formData.value.email,
-            address: formData.value.address,
-            city: formData.value.city,
-            state: formData.value.state,
-            country_id: formData.value.country,
-            postal_code: formData.value.postalCode
-          });
-
-          // Redirect to Stripe checkout
-          window.location.href = response.data.url;
-        }
-      } catch (error) {
-        console.error('Payment error:', error);
-        toastr.error(error.response?.data?.error || 'Payment processing failed', 'Error');
-        isProcessing.value = false;
-      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toastr.error(error.response?.data?.error || 'Payment processing failed', 'Error');
+      isProcessing.value = false;
+    }
   }
 };
 
@@ -462,6 +360,12 @@ const prefillUserData = () => {
 };
 
 onMounted(async () => {
+  if( route.query?.session_id){
+    let sessionId = route.query?.session_id;
+    if(sessionId != ''){
+      const res = await axios.get(`/api/set-status-cart-item/${sessionId}`);
+    }
+  }
   if (!userStore.loggedIn) {
     router.push({ name: 'login' });
     return;

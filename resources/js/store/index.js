@@ -39,6 +39,7 @@ export const cartProducts = defineStore("handleProduct",{
     state : () => ({ 
         cartItems : [], // product details which store in cart 
         cartDetails : [], // cart details with product details
+        tempCart : [],
     }),
     getters : {
         CartItemCountByUser : (state) => {

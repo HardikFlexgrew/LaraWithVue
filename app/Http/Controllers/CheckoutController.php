@@ -67,16 +67,14 @@ class CheckoutController extends Controller
                 'metadata' => [
                     'cartIds' =>json_encode($cartId) 
                 ], 
-                'success_url' => url('/checkout/success?session_id={CHECKOUT_SESSION_ID}'),
+                'shipping_address_collection' => [
+                    'allowed_countries' => ['IN'], // Example: 'IN' for India
+                ],
+                'success_url' => url('/checkout?session_id={CHECKOUT_SESSION_ID}'),
                 'cancel_url' => url('/checkout/cancel'),
             ]); 
 
-            // The setStatus method is being called but its return value is not used or returned, 
-            // and it's likely this will not work as intended because setStatus expects to return a response.
-            // Instead, you should return the result of setStatus or call it separately after session completion.
-            // Example fix: return the result of setStatus:
-            return $this->setStatus($session->id);
-            // return response()->json(['url' => $session->url]);  
+            return response()->json(['url' => $session->url]);  
         } catch (\Exception $e) {
             \Log::error('Checkout error: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
@@ -94,9 +92,12 @@ class CheckoutController extends Controller
                 $stripe = new StripeClient($secret);
                 
                 $items = $stripe->checkout->sessions->retrieve($sessionId);
-                if($items){ 
-                    $payIntent = $stripe->paymentIntents->retrieve($items->payment_intent);
-                    dd($items->payment_intent);
+                if($items){
+                    $payIntent = $stripe->paymentIntents->retrieve(
+                        $items->payment_intent,
+                        ['expand' => ['payment_method']]
+                    );
+                    dd($payIntent); 
                     if($payIntent->status == "succeeded"){
                         $cartId = json_decode($items->metadata->cartIds);
                         $cartItems = CartProduct::whereIn('id',$cartId)->update(['status' => 2]);
