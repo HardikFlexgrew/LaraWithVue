@@ -316,6 +316,7 @@ const processPayment = async () => {
 
     try {
       let cartIds = [];
+      let userIds = [];
       filteredCartItems.value.map(items => {
         cartIds.push(items.id);
       });
@@ -323,9 +324,11 @@ const processPayment = async () => {
       // Prepare cart items for Stripe
       const items = filteredCartItems.value.map(item => ({
         cartId: cartIds,
+        postal_code : formData.value.postalCode,
         quantitty: item.quantitty,
         price: item.price,
-        product: item.product
+        product: item.product,
+        tax_rate : 0.08
       }));
 
       // Create Stripe checkout session
@@ -363,6 +366,7 @@ onMounted(async () => {
   if( route.query?.session_id){
     let sessionId = route.query?.session_id;
     if(sessionId != ''){
+      console.log(sessionId);
       const res = await axios.get(`/api/set-status-cart-item/${sessionId}`);
     }
   }

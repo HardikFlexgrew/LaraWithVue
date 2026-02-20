@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Stripe\StripeClient;
 use App\Models\CartProduct;
+use League\ISO3166\ISO3166; 
+use App\Models\User;
+use CountryState;
 
 class CheckoutController extends Controller
 {
@@ -15,22 +18,42 @@ class CheckoutController extends Controller
     public function createSession(Request $request)
     {
         try {
+            $iso3166 = new ISO3166();
             $items = $request->input('items', []);
+            $User = $request->user()->load('country');
+            $country = $iso3166->alpha3($User->country->country_iso3);
+            $states = CountryState::getStates('IN');
+            $state_code = array_search($User->state,$states);
 
             if (empty($items)) {
                 return response()->json(['error' => 'No items provided'], 400);
-            } 
+            }
+            
+            $User->createOrGetStripeCustomer([
+                'name' => $User->name,
+                'email' => $User->email,
+                'shipping' => [
+                    'name' => $User->name,
+                    'address' => [
+                        'line1' => $User->address, // From your DB
+                        'city' => $User->city,
+                        'state' => $state_code, 
+                        'country' => $country['alpha2'],
+                        'postal_code' => $items[0]['postal_code']
+                    ],
+                ],
+            ]);
 
             $line_items = [];
 
             foreach ($items as $item) {
-                $price = isset($item['price']) ? (int) round(floatval($item['price']) * 100) : 0;
+                $price = isset($item['price']) ? calculate_product_amount_with_tax( $item['price'],$item['tax_rate'] ) : 0;
                 $quantity = isset($item['quantitty']) ? (int) $item['quantitty'] : (int) ($item['quantity'] ?? 1);
                 $product = $item['product'] ?? [];
                 $name = $product['title'] ?? 'Product';
                 $description = $product['description'] ?? null;
                 $cartId = isset($item['cartId']) ? $item['cartId'] : 0;
-                $userId = isset($item['userId']) ? $item['userId'] : 0;
+
                 if ($price <= 0) {
                     continue; // Skip items with invalid pricing
                 }
@@ -47,7 +70,6 @@ class CheckoutController extends Controller
                     'quantity' => max(1, $quantity),
                 ];
             }
-
             if (empty($line_items)) {
                 return response()->json(['error' => 'No valid items for checkout'], 400);
             }
@@ -58,17 +80,21 @@ class CheckoutController extends Controller
                 return response()->json(['error' => 'Stripe secret not configured'], 500);
             }
 
-            $stripe = new StripeClient($secret);
+            // $stripe = new StripeClient($secret);
 
-            $session = $stripe->checkout->sessions->create([
-                'payment_method_types' => ['card'], 
-                'line_items' => $line_items,
+            $session = $User->checkout($line_items,[
+                'customer' => $User->stripe_id,
+                'customer_update' => ['shipping' => 'auto','name' => 'auto'],
+                'payment_method_types' => ['card','crypto'],
                 'mode' => 'payment',
                 'metadata' => [
                     'cartIds' =>json_encode($cartId) 
                 ], 
                 'shipping_address_collection' => [
-                    'allowed_countries' => ['IN'], // Example: 'IN' for India
+                    'allowed_countries' => [$country['alpha2']], // Example: 'IN' for India
+                ],
+                'saved_payment_method_options' => [
+                    'payment_method_save' => 'enabled'
                 ],
                 'success_url' => url('/checkout?session_id={CHECKOUT_SESSION_ID}'),
                 'cancel_url' => url('/checkout/cancel'),
