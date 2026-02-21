@@ -80,8 +80,6 @@ class CheckoutController extends Controller
                 return response()->json(['error' => 'Stripe secret not configured'], 500);
             }
 
-            // $stripe = new StripeClient($secret);
-
             $session = $User->checkout($line_items,[
                 'customer' => $User->stripe_id,
                 'customer_update' => ['shipping' => 'auto','name' => 'auto'],
@@ -95,6 +93,9 @@ class CheckoutController extends Controller
                 ],
                 'saved_payment_method_options' => [
                     'payment_method_save' => 'enabled'
+                ],
+                'phone_number_collection' => [
+                    'enabled' => true,
                 ],
                 'success_url' => url('/checkout?session_id={CHECKOUT_SESSION_ID}'),
                 'cancel_url' => url('/checkout/cancel'),
@@ -123,7 +124,7 @@ class CheckoutController extends Controller
                         $items->payment_intent,
                         ['expand' => ['payment_method']]
                     );
-                    dd($payIntent); 
+                    dd($payIntent,$items); 
                     if($payIntent->status == "succeeded"){
                         $cartId = json_decode($items->metadata->cartIds);
                         $cartItems = CartProduct::whereIn('id',$cartId)->update(['status' => 2]);

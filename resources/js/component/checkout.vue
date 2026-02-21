@@ -367,7 +367,7 @@ onMounted(async () => {
     let sessionId = route.query?.session_id;
     if(sessionId != ''){
       console.log(sessionId);
-      const res = await axios.get(`/api/set-status-cart-item/${sessionId}`);
+      const res = await axios.get(`/api/set-status-cart-item/${sessionId}`, {cartProduct});
     }
   }
   if (!userStore.loggedIn) {

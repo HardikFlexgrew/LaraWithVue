@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\order;
 
 class CartProduct extends Model
 {
@@ -26,5 +27,9 @@ class CartProduct extends Model
 
     public function user(){
         return $this->belongsTo(User::class,'user_id');
+    }
+
+    public function order(){
+        return $this->hasOne(order::class);
     }
 }
