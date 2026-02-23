@@ -6,9 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Stripe\StripeClient;
 use App\Models\CartProduct;
+use App\Models\Country;
 use League\ISO3166\ISO3166; 
 use App\Models\User;
 use CountryState;
+use App\Models\order;
 
 class CheckoutController extends Controller
 {
@@ -108,7 +110,7 @@ class CheckoutController extends Controller
         }
     }
 
-    public function setStatus($sessionId){
+    public function setStatus($sessionId,Request $request){
         try{
             if(!empty($sessionId)){
                 $secret = env('STRIPE_SECRET') ?? config('services.stripe.secret');
@@ -124,13 +126,35 @@ class CheckoutController extends Controller
                         $items->payment_intent,
                         ['expand' => ['payment_method']]
                     );
-                    dd($payIntent,$items); 
                     if($payIntent->status == "succeeded"){
                         $cartId = json_decode($items->metadata->cartIds);
                         $cartItems = CartProduct::whereIn('id',$cartId)->update(['status' => 2]);
                         if($cartItems > 0){
-                            
-                        }
+                            $data = [
+                                'order_date' => now()->toDateString(),
+                                'total_amount' => $payIntent->amount/100,
+                                'currency' => $payIntent->currency,
+                                'payment_details' => [
+                                    "stripe_payment_intent_id" => $payIntent->id,
+                                    "payment_method" => $payIntent->payment_method->type,
+                                    "payment_status" => $payIntent->status,
+                                    "card_brand" => $payIntent->payment_method->card->brand,
+                                    "card_last4" => $payIntent->payment_method->card->last4,
+                                ],
+                                "billing_address" => [
+                                    'address' => $request->tempCart['address'],
+                                    'city' =>    $request->tempCart['city'],
+                                    "state" =>   $request->tempCart['state'],
+                                    "country" => Country::getCountryName($request->tempCart['country']),
+                                    "postal_code" => $request->tempCart['postalCode'],
+                                    "contact_number" => $items->customer_details->phone   
+                                ],
+                            ];
+                            foreach ($cartId as $value) {
+                                $data['cart_product_id'] = $value;
+                                order::create($data);
+                            }
+                        }   
                     }
                 } 
 

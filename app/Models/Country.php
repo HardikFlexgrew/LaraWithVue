@@ -15,5 +15,9 @@ class Country extends Model
 
     public function users(){
         return $this->hasMany(User::class);
-    }    
+    }
+    
+    public static function getCountryName($id){
+        return Country::where('id',$id)->value('country_name');
+    }
 }

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('total_amount',10,2)->nullable();
             $table->string('currency')->nullable();
             $table->json('payment_details')->nullable(); // store stripe_payment_intent_id,payment_method,payment_status,card_brand,card_last4
-            $table->string('billing_address')->nullable();   
+            $table->json('billing_address')->nullable();   
             $table->timestamps();
         });
     }

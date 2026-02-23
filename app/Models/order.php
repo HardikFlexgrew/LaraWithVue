@@ -12,7 +12,7 @@ class order extends Model
     use SoftDeletes,HasFactory;
 
     protected $fillable = [
-        'cart_id',
+        'cart_product_id',
         'order_date',
         'order_status',
         'total_amount',
@@ -28,5 +28,6 @@ class order extends Model
     protected $casts = [
         'order_date' => 'date',
         'payment_details' => 'object',
+        'billing_address' => 'object',
     ];
 }
