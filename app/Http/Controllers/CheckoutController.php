@@ -11,6 +11,7 @@ use League\ISO3166\ISO3166;
 use App\Models\User;
 use CountryState;
 use App\Models\order;
+use App\Models\OrderItems;
 
 class CheckoutController extends Controller
 {
@@ -131,17 +132,18 @@ class CheckoutController extends Controller
                         $cartItems = CartProduct::whereIn('id',$cartId)->update(['status' => 2]);
                         if($cartItems > 0){
                             $data = [
+                                'user_id' => $request->user()->id,
+                                'cart_id' => $cartId,
                                 'order_date' => now()->toDateString(),
                                 'total_amount' => $payIntent->amount/100,
                                 'currency' => $payIntent->currency,
                                 'payment_details' => [
                                     "stripe_payment_intent_id" => $payIntent->id,
                                     "payment_method" => $payIntent->payment_method->type,
-                                    "payment_status" => $payIntent->status,
                                     "card_brand" => $payIntent->payment_method->card->brand,
                                     "card_last4" => $payIntent->payment_method->card->last4,
                                 ],
-                                "billing_address" => [
+                                'billing_address' => [
                                     'address' => $request->tempCart['address'],
                                     'city' =>    $request->tempCart['city'],
                                     "state" =>   $request->tempCart['state'],
@@ -149,11 +151,17 @@ class CheckoutController extends Controller
                                     "postal_code" => $request->tempCart['postalCode'],
                                     "contact_number" => $items->customer_details->phone   
                                 ],
+                                'payment_status' => $payIntent->status,
                             ];
-                            foreach ($cartId as $value) {
-                                $data['cart_product_id'] = $value;
-                                order::create($data);
-                            }
+                            $order = order::create($data); 
+                            OrderItems::create([
+                                'order_id' => $order->id,
+                                'product_id' =>$request->item[0]['id'],
+                                'quantity' => $request->item[0]['quantity'],
+                                'price' =>  $request->item[0]['price'],
+                                'tax_amount' => $request->item[0]['tax_amount'],
+                                "total" => ($request->item[0]['price'] + $request->item[0]['tax_amount']),
+                            ]);                                       
                         }   
                     }
                 } 

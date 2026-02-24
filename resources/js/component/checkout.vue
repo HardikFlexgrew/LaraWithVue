@@ -363,15 +363,20 @@ const prefillUserData = () => {
 };
 
 onMounted(async () => {
+ 
   if( route.query?.session_id){
     let sessionId = route.query?.session_id;
     if(sessionId != ''){
-      console.log(sessionId);
-
-      const res = await axios.post(`/api/set-status-cart-item/${sessionId}`, {tempCart: cartProduct.tempCart[0]});
-
+      const product = filteredCartItems.value.map(items => ({
+        id : items.product.id,
+        quantity : items.quantitty,
+        price : items.price,
+        tax_amount : items.price * 0.08,
+      }));
+      const res = await axios.post(`/api/set-status-cart-item/${sessionId}`, {tempCart: cartProduct.tempCart[0] , item : product});
     }
   }
+
   if (!userStore.loggedIn) {
     router.push({ name: 'login' });
     return;
