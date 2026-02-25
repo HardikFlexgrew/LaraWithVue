@@ -169,6 +169,7 @@ class productController extends Controller
         $checkExist = CartProduct::with('product')->where('product_id', $productId)
             ->where('user_id', Auth::user()->id)
             ->where('price',$productPrice->price)
+            ->where('status',1)
             ->first();
 
         if ($checkExist) {

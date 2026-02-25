@@ -13,8 +13,8 @@
         <span class="logo-text-modern animate-gradient">LaraWithVue</span>
       </div>
       <nav :class="['header__nav-modern', { 'header__nav--open-modern': navOpen }]">
-        <ul class="nav-list-modern">
-          <li v-if="userStore.loggedIn">
+        <ul class="nav-list-modern" v-if="userStore.loggedIn">
+          <li>
             <RouterLink class="nav-link-modern nav-link-icon" :to="{name : 'product'}">
               <span class="icon">
                 <svg width="20" height="20" fill="none"><path stroke="#0ea5e9" stroke-width="2" d="M4 10h12M4 14h8M4 6h10" stroke-linecap="round"/></svg>
@@ -22,7 +22,7 @@
               Product
             </RouterLink>
           </li>
-          <li v-if="userStore.loggedIn && can('add','product')">
+          <li v-if="can('add','product')">
             <RouterLink class="nav-link-modern nav-link-icon" :to="{name : 'add_product'}">
               <span class="icon">
                 <svg width="19" height="19" fill="none"><circle cx="9.5" cy="9.5" r="8.5" stroke="#0ea5e9" stroke-width="2"/><path d="M9.5 6v7M6 9.5h7" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round"/></svg>
@@ -30,7 +30,7 @@
               Add Product
             </RouterLink>
           </li>
-          <li v-if="userStore.loggedIn">
+          <li>
             <!-- Add to cart Btn -->
             <RouterLink class="nav-link-modern nav-link-icon" :to="{name : 'cart'}">
               <span class="icon">
@@ -41,6 +41,22 @@
                 </svg>
               </span>
               Cart
+            </RouterLink>
+          </li>
+          <li>
+            <!-- Orders Module Navigation -->
+            <RouterLink class="nav-link-modern nav-link-icon" :to="{name : 'orders'}">
+              <span class="icon">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
+                  <g>
+                    <polygon points="4,8.5 12,13 20,8.5 12,4" fill="#bae6fd" stroke="#0ea5e9" stroke-width="1.5"/>
+                    <polygon points="4,8.5 4,15.5 12,20 12,13" fill="#f0f9ff" stroke="#38bdf8" stroke-width="1.2"/>
+                    <polygon points="20,8.5 20,15.5 12,20 12,13" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.2"/>
+                    <polyline points="4,8.5 12,13 20,8.5" fill="none" stroke="#7dd3fc" stroke-width="0.9" stroke-linecap="round"/>
+                  </g>
+                </svg>
+              </span>
+              Orders
             </RouterLink>
           </li>
         </ul>

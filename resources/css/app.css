@@ -706,12 +706,29 @@
     margin: 3rem 0 2rem 0;
 }
 
+.modern-product-listing__empty_order {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin: 11rem 0 2rem 0;
+}
+
 .modern-product-listing__empty svg {
     opacity: 0.6;
     margin-bottom: 1.1em;
 }
 
+.modern-product-listing__empty_order svg {
+    opacity: 0.6;
+    margin-bottom: 1.1em;
+}
+
 .modern-product-listing__empty p {
+    color: #64748b;
+    font-size: 1.22rem;
+    font-weight: 500;
+}
+
+.modern-product-listing__empty_order p {
     color: #64748b;
     font-size: 1.22rem;
     font-weight: 500;

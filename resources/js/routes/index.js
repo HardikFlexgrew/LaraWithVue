@@ -5,6 +5,7 @@ import Login from "../component/login.vue";
 import Cart from "../component/cart.vue";
 import Checkout from "../component/checkout.vue";
 import CheckoutSuccess from "../component/CheckoutSuccess.vue";
+import Orders from "../Pages/Orders.vue";
 import { User } from "@/store";
 import { useAbility } from "@casl/vue";
 import { rule } from "postcss";
@@ -70,8 +71,15 @@ const routes = [
         meta: {
             requiresAuth: true
         }
-    }
-    ,
+    },
+    {
+        path: '/orders',
+        name: 'orders',
+        component: Orders,
+        meta: {
+            requiresAuth: true
+        }
+    },
     {
         path: '/checkout/success',
         name: 'checkout_success',

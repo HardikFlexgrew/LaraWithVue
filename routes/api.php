@@ -30,6 +30,7 @@ Route::middleware(['web'])->group(function () {
         Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('api.logout');
         Route::post('/create-checkout-session', [CheckoutController::class, 'createSession'])->name('api.checkout.create');
         Route::post('/set-status-cart-item/{sessionId}',[CheckoutController::class, 'setStatus'])->name('api.checkout.set-status');
+        Route::get('/get-order-product',[CheckoutController::class,'get_order_product'])->name('api.order.product');
     });
 
     Route::post('/product/create', [productController::class, 'create'])

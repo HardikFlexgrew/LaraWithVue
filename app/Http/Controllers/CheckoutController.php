@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Stripe\StripeClient;
+use Stripe\Stripe;
+use Stripe\Customer;
 use App\Models\CartProduct;
 use App\Models\Country;
 use League\ISO3166\ISO3166; 
@@ -12,27 +14,50 @@ use App\Models\User;
 use CountryState;
 use App\Models\order;
 use App\Models\OrderItems;
+use Illuminate\Support\Facades\Auth;
 
 class CheckoutController extends Controller
 {
     /**
      * Create a Stripe Checkout Session from cart items.
      */
+    public function __construct(){
+        Stripe::setApiKey(env('STRIPE_SECRET') ?? config('services.stripe.secret'));
+    }
+
     public function createSession(Request $request)
     {
         try {
             $iso3166 = new ISO3166();
             $items = $request->input('items', []);
             $User = $request->user()->load('country');
-            $country = $iso3166->alpha3($User->country->country_iso3);
+            $country = $iso3166->name(Country::getCountryName($items[0]['country']));
             $states = CountryState::getStates('IN');
             $state_code = array_search($User->state,$states);
-
+            
             if (empty($items)) {
                 return response()->json(['error' => 'No items provided'], 400);
             }
-            
-            $User->createOrGetStripeCustomer([
+
+            if($User->stripe_id){
+                \Stripe\Customer::update($User->stripe_id,[
+                    'name' => $User->name,
+                    'email' => $User->email,
+                    'shipping' => [
+                        'name' => $User->name,
+                        'address' => [
+                            'line1' => $User->address, // From your DB
+                            'city' => $User->city,
+                            'state' => $state_code, 
+                            'country' => $country['alpha2'],
+                            'postal_code' => $items[0]['postal_code']
+                        ],
+                    ],
+                ]);
+            }
+
+            // dd($country['alpha2']);
+            $stripeCustomerObject = $User->createOrGetStripeCustomer([
                 'name' => $User->name,
                 'email' => $User->email,
                 'shipping' => [
@@ -73,7 +98,7 @@ class CheckoutController extends Controller
                     'quantity' => max(1, $quantity),
                 ];
             }
-            if (empty($line_items)) {
+            if (empty($line_items)) {   
                 return response()->json(['error' => 'No valid items for checkout'], 400);
             }
 
@@ -91,7 +116,7 @@ class CheckoutController extends Controller
                 'metadata' => [
                     'cartIds' =>json_encode($cartId) 
                 ], 
-                'shipping_address_collection' => [
+                'shipping_address_collection' => [  
                     'allowed_countries' => [$country['alpha2']], // Example: 'IN' for India
                 ],
                 'saved_payment_method_options' => [
@@ -154,21 +179,28 @@ class CheckoutController extends Controller
                                 'payment_status' => $payIntent->status,
                             ];
                             $order = order::create($data); 
-                            OrderItems::create([
+                            $orderItem = OrderItems::create([
                                 'order_id' => $order->id,
                                 'product_id' =>$request->item[0]['id'],
                                 'quantity' => $request->item[0]['quantity'],
                                 'price' =>  $request->item[0]['price'],
                                 'tax_amount' => $request->item[0]['tax_amount'],
                                 "total" => ($request->item[0]['price'] + $request->item[0]['tax_amount']),
-                            ]);                                       
+                            ]);   
+
+                            if($orderItem){
+                               return response()->json([
+                                'success' => true,
+                                'message' => 'Order placed successfully'
+                               ]); 
+                            }
                         }   
                     }
                 } 
 
                 return response()->json([
-                    'success' => true,
-                    'orderedItem' => $payIntent
+                    'success' => false,
+                    'message' => 'Order can\'t placed due to some issues!!!'
                 ]);
             }
         } catch (\Exception $e) {
@@ -176,5 +208,11 @@ class CheckoutController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function get_order_product(){
+        $order = order::where('user_id',Auth::user()->id)->where('order_status','pending')->where('payment_status','succeeded')->get(); 
+        $orderItems = OrderItems::with('order')->whereIn('order_id',$order->pluck('id'))->get();
+        dd($orderItems);
     }
 }

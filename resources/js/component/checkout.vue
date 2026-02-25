@@ -1,5 +1,8 @@
 <template>
-  <div class="checkout-container">
+  <div v-if="loading" class="modern-loader-overlay">
+    <div class="modern-loader-spinner"></div>
+  </div>
+  <div v-else class="checkout-container">
     <div class="checkout-wrapper">
         <form @submit.prevent="placeOrder" class="address-form">
 
@@ -233,6 +236,7 @@ const userStore = User();
 const isProcessing = ref(false);
 const countries = ref([]);
 const paymentMethod = ref('card');
+const loading = ref(false);
 
 const formData = ref({
   fullName: '',
@@ -242,13 +246,6 @@ const formData = ref({
   state: '',
   country: '',
   postalCode: ''
-});
-
-const cardDetails = ref({
-  number: '',
-  name: '',
-  expiry: '',
-  cvc: ''
 });
 
 async function getCountry(){
@@ -325,6 +322,7 @@ const processPayment = async () => {
       const items = filteredCartItems.value.map(item => ({
         cartId: cartIds,
         postal_code : formData.value.postalCode,
+        country : formData.value.country,
         quantitty: item.quantitty,
         price: item.price,
         product: item.product,
@@ -373,7 +371,15 @@ onMounted(async () => {
         price : items.price,
         tax_amount : items.price * 0.08,
       }));
+      loading.value = true;
       const res = await axios.post(`/api/set-status-cart-item/${sessionId}`, {tempCart: cartProduct.tempCart[0] , item : product});
+      if(res.data.success){
+        toastr.success(res.data.message);
+        router.push({name:'product'});
+        loading.value = false;
+      } else{
+        toastr.error(res.data.message);
+      }
     }
   }
 
