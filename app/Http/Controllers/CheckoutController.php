@@ -211,8 +211,24 @@ class CheckoutController extends Controller
     }
 
     public function get_order_product(){
-        $order = order::where('user_id',Auth::user()->id)->where('order_status','pending')->where('payment_status','succeeded')->get(); 
-        $orderItems = OrderItems::with('order')->whereIn('order_id',$order->pluck('id'))->get();
-        dd($orderItems);
+        try{
+            $order = order::where('user_id',Auth::user()->id)->where('order_status','pending')->where('payment_status','succeeded')->get(); 
+            $orderItems = OrderItems::with(['order','product'])->whereIn('order_id',$order->pluck('id'))->get();
+            if($orderItems){
+                return response()->json([
+                    'success' => true,
+                    'orderItems' => $orderItems
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ordered product not found'
+                ]);
+            }
+        } catch (\Exception $e){
+            return response()->json([
+                'error' => $e->getMessage(),
+            ],500);
+        }
     }
 }
