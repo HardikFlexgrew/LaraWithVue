@@ -1,4 +1,6 @@
 import './bootstrap';
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/js/bootstrap.bundle.js';
 import '../css/app.css';
 import { createApp, watch, ref } from 'vue';
 import { createPinia } from 'pinia';
@@ -9,8 +11,11 @@ import { abilitiesPlugin } from '@casl/vue';
 import ability from './services/ability';   
 import { User } from './store';
 import 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js';
+import { BootstrapVue3 } from 'bootstrap-vue-3';
+import 'bootstrap-vue-3/dist/bootstrap-vue-3.css';
 
 const app = createApp(App); 
+app.use(BootstrapVue3);
 const pinia = createPinia();
 app.use(router);
 pinia.use(createPersistedState());
