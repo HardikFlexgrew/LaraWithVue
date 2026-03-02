@@ -321,6 +321,11 @@ const processPayment = async () => {
       // Prepare cart items for Stripe
       const items = filteredCartItems.value.map(item => ({
         cartId: cartIds,
+        name : formData.value.fullName,
+        email : formData.value.email,
+        address : formData.value.address,
+        city : formData.value.city,
+        state : formData.value.state,
         postal_code : formData.value.postalCode,
         country : formData.value.country,
         quantitty: item.quantitty,
@@ -366,16 +371,16 @@ onMounted(async () => {
     let sessionId = route.query?.session_id;
     if(sessionId != ''){
       const product = filteredCartItems.value.map(items => ({
-        id : items.product.id,
+        productId : items.product.id,
         quantity : items.quantitty,
         price : items.price,
-        tax_amount : items.price * 0.08,
+        tax_amount : (items.price * items.quantitty) * 0.08,
       }));
       loading.value = true;
       const res = await axios.post(`/api/set-status-cart-item/${sessionId}`, {tempCart: cartProduct.tempCart[0] , item : product});
       if(res.data.success){
         toastr.success(res.data.message);
-        router.push({name:'product'});
+        router.push({name:'orders'});
         loading.value = false;
       } else{
         toastr.error(res.data.message);

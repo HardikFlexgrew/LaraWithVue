@@ -33,7 +33,7 @@ class CheckoutController extends Controller
             $User = $request->user()->load('country');
             $country = $iso3166->name(Country::getCountryName($items[0]['country']));
             $states = CountryState::getStates('IN');
-            $state_code = array_search($User->state,$states);
+            $state_code = array_search($items[0]['state'],$states);
             
             if (empty($items)) {
                 return response()->json(['error' => 'No items provided'], 400);
@@ -41,13 +41,13 @@ class CheckoutController extends Controller
 
             if($User->stripe_id){
                 \Stripe\Customer::update($User->stripe_id,[
-                    'name' => $User->name,
-                    'email' => $User->email,
+                    'name' => $items[0]['name'],
+                    'email' => $items[0]['email'],
                     'shipping' => [
-                        'name' => $User->name,
+                        'name' => $items[0]['name'],
                         'address' => [
-                            'line1' => $User->address, // From your DB
-                            'city' => $User->city,
+                            'line1' => $items[0]['address'], // From your DB
+                            'city' => $items[0]['city'],
                             'state' => $state_code, 
                             'country' => $country['alpha2'],
                             'postal_code' => $items[0]['postal_code']
@@ -58,13 +58,13 @@ class CheckoutController extends Controller
 
             // dd($country['alpha2']);
             $stripeCustomerObject = $User->createOrGetStripeCustomer([
-                'name' => $User->name,
-                'email' => $User->email,
+                'name' => $items[0]['name'],
+                'email' => $items[0]['email'],
                 'shipping' => [
-                    'name' => $User->name,
+                    'name' =>  $items[0]['name'],
                     'address' => [
-                        'line1' => $User->address, // From your DB
-                        'city' => $User->city,
+                        'line1' => $items[0]['address'], // From your DB
+                        'city' => $items[0]['city'],
                         'state' => $state_code, 
                         'country' => $country['alpha2'],
                         'postal_code' => $items[0]['postal_code']
@@ -81,7 +81,6 @@ class CheckoutController extends Controller
                 $name = $product['title'] ?? 'Product';
                 $description = $product['description'] ?? null;
                 $cartId = isset($item['cartId']) ? $item['cartId'] : 0;
-
                 if ($price <= 0) {
                     continue; // Skip items with invalid pricing
                 }
@@ -98,6 +97,7 @@ class CheckoutController extends Controller
                     'quantity' => max(1, $quantity),
                 ];
             }
+
             if (empty($line_items)) {   
                 return response()->json(['error' => 'No valid items for checkout'], 400);
             }
@@ -106,7 +106,7 @@ class CheckoutController extends Controller
 
             if (empty($secret)) {
                 return response()->json(['error' => 'Stripe secret not configured'], 500);
-            }
+            }   
 
             $session = $User->checkout($line_items,[
                 'customer' => $User->stripe_id,
@@ -178,17 +178,23 @@ class CheckoutController extends Controller
                                 ],
                                 'payment_status' => $payIntent->status,
                             ];
-                            $order = order::create($data); 
-                            $orderItem = OrderItems::create([
-                                'order_id' => $order->id,
-                                'product_id' =>$request->item[0]['id'],
-                                'quantity' => $request->item[0]['quantity'],
-                                'price' =>  $request->item[0]['price'],
-                                'tax_amount' => $request->item[0]['tax_amount'],
-                                "total" => ($request->item[0]['price'] + $request->item[0]['tax_amount']),
-                            ]);   
 
-                            if($orderItem){
+                            $order = order::create($data); 
+
+                            $orderItems = collect($request->item)->map(function($item) use ($order){
+                                return [
+                                    'order_id' => $order->id,
+                                    'product_id' =>$item['productId'],
+                                    'quantity' => $item['quantity'],
+                                    'price' =>  $item['price'],
+                                    'tax_amount' => $item['tax_amount'],
+                                    "total" => (($item['price'] *  $item['quantity'])  + $item['tax_amount'])
+                                ];
+                            });
+
+                            $orderItemInsert = $order->orderItems()->createMany($orderItems);
+
+                            if($orderItemInsert){
                                return response()->json([
                                 'success' => true,
                                 'message' => 'Order placed successfully'
@@ -212,8 +218,8 @@ class CheckoutController extends Controller
 
     public function get_order_product(){
         try{
-            $order = order::where('user_id',Auth::user()->id)->where('order_status','pending')->where('payment_status','succeeded')->get(); 
-            $orderItems = OrderItems::with(['order','product'])->whereIn('order_id',$order->pluck('id'))->get();
+            $order = order::where('user_id',Auth::user()->id)->where('payment_status','succeeded')->get(); 
+            $orderItems = OrderItems::with(['order','product'])->whereIn('order_id',$order->pluck('id'))->get()->groupBy('order_id');
             if($orderItems){
                 return response()->json([
                     'success' => true,

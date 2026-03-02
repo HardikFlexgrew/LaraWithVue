@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\CartProduct;
 use App\Models\User;
+use App\Models\OrderItems;
+
 class order extends Model
 {
     use SoftDeletes,HasFactory;
@@ -29,6 +31,10 @@ class order extends Model
 
     public function users(){
         return $this->belongsTo(User::class,'user_id');
+    }
+
+    public function orderItems(){
+        return $this->hasMany(OrderItems::class);
     }
 
     protected $casts = [

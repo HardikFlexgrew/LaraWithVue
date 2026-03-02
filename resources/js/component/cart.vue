@@ -59,7 +59,7 @@
         <div class="modern-product-card__footer card-footer-overhaul" 
           style="margin-top: auto; background: #fff; z-index: 1; border-top: 1px solid #f2f2f2;">
           <span class="modern-product-card__price">
-            {{ '$' + products?.price * products?.quantitty }}
+            {{ '$' + products?.price }}
           </span>
           <div class="modern-product-card__actions">
             <button @click="decreaseQuantity(products?.id)" class="modern-btn modern-btn--subtract"

@@ -5,7 +5,8 @@
   <div class="modern-order-wrapper_order">
     <div class="modern-orders-container">
       <!-- Empty state for no orders -->
-      <div v-if="!order[0]?.length" class="modern-product-listing__empty_order">
+       {{ order[1][0] }}
+      <div v-if="!order?.length" class="modern-product-listing__empty_order">
         <svg width="90" height="90" viewBox="0 0 36 36">
           <circle cx="18" cy="18" r="16" fill="#e0f2fe" />
           <path d="M12 21.5V14.5c0-.28.22-.5.5-.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5c-.28 0-.5-.22-.5-.5zm5 0V14.5c0-.28.22-.5.5-.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5c-.28 0-.5-.22-.5-.5zm5 0V14.5c0-.28.22-.5.5-.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5c-.28 0-.5-.22-.5-.5z" fill="#94a3b8"/>
@@ -14,7 +15,7 @@
       </div>
       <!-- Orders List -->
       <div v-else class="modern-product-listing_order">
-        <div v-for="(orderObj, idxOrder) in order[0]" :key="idxOrder" class="modern-product-card_order">
+        <div v-for="(orderObj, idxOrder) in order" :key="idxOrder" class="modern-product-card_order">
           <!-- Order Header -->
           <div class="order_time_details">
             <div>
@@ -51,7 +52,7 @@
       </div>
     </div>
     <!-- Fixed Checkout Footer -->
-    <div class="cart-checkout-footer">
+    <div v-if="total_amount" class="cart-checkout-footer">
       <div class="cart-checkout-footer-inner">
         <div class="cart-total-amount-emoji">
           <div class="cart-total-amount-emoji-insider">
@@ -61,6 +62,7 @@
             </span>
             <span class="show-total-amount">
               <!-- Add checkout total if needed -->
+              ${{total_amount}}
             </span>
           </div>
         </div>
@@ -83,17 +85,20 @@ const userStore = User();
 const { can } = useAbility();
 const order = ref([]);
 const show = ref(false);
+const total_amount = ref(0);
 
 async function getOrderProduct() {
   const res = await axios.get('/api/get-order-product');
-  if(res.data.success){ 
+  if (res.data.success) {
     order.value.push(res.data.orderItems);
+    order.value = order.value[0];
+    // total_amount.value = order.value
+    // ?.reduce((total,sum) => total + parseFloat(sum.total || 0),0) ?? 0;
   }
 }
 
 onMounted(async () => { 
-  getOrderProduct();    
+  await getOrderProduct();
 });
-console.log(order.value);
 
 </script>
