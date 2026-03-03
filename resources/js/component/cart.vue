@@ -1,16 +1,24 @@
 <template>
-  <div class="modern-product-listing cart-page-wrapper">
+  <div v-if="loading" class="modern-loader-overlay">
+    <div class="modern-loader-spinner"></div>
+  </div>
+  <div class="modern-product-listing cart-page-wrapper" v-if="!orderComponent">
     <div class="modern-product-listing__filter"
-      style="display: flex; justify-content: center; align-items: center; margin-bottom: 2.5rem;">
-      <div class="moder-product-filter">
+      style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem;">
+      <!-- Left empty space for spacing/alignment -->
+      <div style="flex: 1;"></div>
+      <!-- Centered search filter -->
+      <div class="moder-product-filter"
+           style="display: flex; align-items: center; justify-content: center; flex: 0 1 550px; min-width: 320px; max-width: 600px;">
         <svg width="22" height="22" fill="none" viewBox="0 0 22 22"
           style="margin-right:.85em;opacity:0.73;margin-left: 15px;">
           <circle cx="10" cy="10" r="8" stroke="#1197e6" stroke-width="2" />
           <path d="M16 16l3.5 3.5" stroke="#1197e6" stroke-width="2" stroke-linecap="round" />
         </svg>
         <input v-model="filterText" type="text" class="modern-form-input filter-product-input"
-        :placeholder="filterPlaceholder"
-        ref="typedInput" style="
+          :placeholder="filterPlaceholder"
+          ref="typedInput"
+          style="
             flex: 1;
             padding: .85em 1em;
             border: none;
@@ -23,7 +31,24 @@
             box-shadow: none;
           " />
       </div>
-    </div>
+      <!-- Order button at the end (right) -->
+      <div style="display: flex; align-items: center; justify-content: flex-end; flex: 1;">
+        <button class="modern-btn modern-btn--order" @click="changeComponent(true)"
+          style="display: flex; align-items: center; gap: 0.5em; padding: 0.6em 1.25em; border-radius: 10px; background: linear-gradient(90deg,#2564db 0%,#0073c7 100%); color: #fff; font-weight: 600; border: none; font-size: 1.08em; box-shadow: 0 1px 7px 0 rgba(20,48,80,0.10); cursor: pointer;">
+          <span class="icon">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
+              <g>
+                <polygon points="4,8.5 12,13 20,8.5 12,4" fill="#bae6fd" stroke="#0ea5e9" stroke-width="1.5"/>
+                <polygon points="4,8.5 4,15.5 12,20 12,13" fill="#f0f9ff" stroke="#38bdf8" stroke-width="1.2"/>
+                <polygon points="20,8.5 20,15.5 12,20 12,13" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.2"/>
+                <polyline points="4,8.5 12,13 20,8.5" fill="none" stroke="#7dd3fc" stroke-width="0.9" stroke-linecap="round"/>
+              </g>
+            </svg>
+          </span>
+          Orders
+        </button>
+      </div>
+    </div>  
     <div class="modern-product-listing__grid" style="padding-bottom: 110px;">
       <!-- Added padding-bottom to prevent card content being covered by footer -->
       <div v-if="cartProduct?.cartDetails[0]?.length <= 0" class="modern-product-listing__empty">
@@ -114,16 +139,18 @@
       </div>
     </div>
   </div>
+  <Orders v-if="orderComponent"></Orders>
 </template>
 
 <script setup>
 import toastr from 'toastr'
 import { useRouter } from 'vue-router';
 import axios from 'axios'
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, defineEmits } from 'vue';
 import { useAbility } from '@casl/vue';
 import { cartProducts,User } from '../store';
 import Typed from 'typed.js';
+import Orders from '@/Pages/Orders.vue';
 
 const router = useRouter();
 const cartProduct = cartProducts();
@@ -135,6 +162,8 @@ const filterText = ref('');
 const typedInput = ref(null);
 const filterPlaceholder = ref();
 let typed = null;
+const orderComponent = ref(false);
+const loading = ref(false);
 
 async function getCartProduct() {
   cartProduct.cartDetails = []
@@ -147,6 +176,14 @@ async function getCartProduct() {
     });
   }
 }
+
+function changeComponent(change){
+  loading.value = true;
+  if(change) orderComponent.value = true
+  else orderComponent.value = false;
+  loading.value = false;
+}
+
 onMounted(async () => { 
   getCartProduct();
   if (typedInput.value) {

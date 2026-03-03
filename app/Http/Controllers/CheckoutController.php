@@ -218,12 +218,11 @@ class CheckoutController extends Controller
 
     public function get_order_product(){
         try{
-            $order = order::where('user_id',Auth::user()->id)->where('payment_status','succeeded')->get(); 
-            $orderItems = OrderItems::with(['order','product'])->whereIn('order_id',$order->pluck('id'))->get()->groupBy('order_id');
-            if($orderItems){
+            $order = order::with(['orderItems','orderItems.product'])->where('user_id',Auth::user()->id)->where('payment_status','succeeded')->get(); 
+            if($order){
                 return response()->json([
                     'success' => true,
-                    'orderItems' => $orderItems
+                    'order' => $order
                 ]);
             } else {
                 return response()->json([
