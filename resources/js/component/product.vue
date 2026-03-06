@@ -1,7 +1,7 @@
 <template>
   <div class="modern-product-listing">
     <!-- Filter/Search Bar -->
-    <div class="modern-product-listing__filter"
+    <div class="modern-product-listing__filter" v-if="!editCheck"
       style="display: flex; justify-content: center; align-items: center; margin-bottom: 2.5rem;">
       <div class="moder-product-filter">
         <svg width="22" height="22" fill="none" viewBox="0 0 22 22"
@@ -32,7 +32,8 @@
       </div>
     </div>
     <div class="modern-product-listing__grid">
-      <div class="modern-product-card" v-for="product in filteredProducts" :key="product.id">
+      <EditProduct :id="editId" v-if="editCheck" @edited="editedProduct"></EditProduct>
+      <div class="modern-product-card" v-else v-for="product in filteredProducts" :key="product.id">
         <div class="modern-product-card__img-wrapper">
           <img :src="`/storage/${product.image}`" :alt="product.title" class="modern-product-card__img"
             loading="lazy" />
@@ -54,6 +55,7 @@
                   stroke="#e0f2fe" stroke-width="2"></path>
               </svg>
             </button>
+
             <button @click="deleteProduct(product.id)" class="modern-btn modern-btn--delete" title="Delete product"
               aria-label="Delete" v-if="can('delete', 'product')">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -88,26 +90,30 @@
 
 <script setup>
 import toastr from 'toastr'
-import { onMounted, ref, watch, computed } from 'vue';
+import { onMounted, ref,computed, onUpdated } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios'
 import { useAbility } from '@casl/vue';
 import { cartProducts } from '@/store';
 import Typed from 'typed.js';
+import EditProduct from './add_product.vue';
 
 const router = useRouter();
 const products = ref([]);
 const filterText = ref('');
 const cartProduct = cartProducts();
 const { can } = useAbility();
-
+const editCheck = ref(false);
+const editId = ref(0);
 const typedInput = ref(null);
 const filterPlaceholder = ref();
 let typed = null;
 
 async function getProduct() {
   const res = await axios.get('/api/product/show');
-  products.value = res.data.products;
+  if(res){
+    products.value = res.data.products;
+  }
 }
 
 const filteredProducts = computed(() => {
@@ -122,9 +128,17 @@ const filteredProducts = computed(() => {
   });
 });
  
+function editedProduct(check){
+  if(check){
+    editCheck.value = false;    
+    getProduct();
+  }
+}
+
 async function editProduct(productId) {
   if (can('edit', 'product')) {
-    router.push({ name: 'edit_product', params: { 'id': productId } });
+    editCheck.value = true;
+    editId.value = productId;
   } else {
     toastr.error("Unauthorized", 'Error');
   }
@@ -152,7 +166,7 @@ async function deleteProduct(productId) {
           progressBar: true,
           closeButton: true
         });
-        getProduct()
+        await getProduct()
       }
     } catch (err) {
       toastr.error(err.response.data.message, 'Error', {
@@ -164,10 +178,10 @@ async function deleteProduct(productId) {
   } else {
     toastr.error("Unauthorized", 'Error');
   }
-}
+} 
 
 onMounted(async () => {
-  getProduct();
+  await getProduct();
   if (typedInput.value) {
     typed = new Typed(typedInput.value, {
       strings: [

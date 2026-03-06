@@ -254,8 +254,8 @@ import { onMounted, ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import toastr from 'toastr'
-import { User } from '../store'
 import { apiRequest } from '@/services/api'
+import { User } from '@/store'
 
 const props = defineProps({
   register: String,

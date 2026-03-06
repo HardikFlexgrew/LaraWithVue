@@ -14,6 +14,7 @@ use App\Models\User;
 use CountryState;
 use App\Models\order;
 use App\Models\OrderItems;
+use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 
 class CheckoutController extends Controller
@@ -185,6 +186,7 @@ class CheckoutController extends Controller
                                 return [
                                     'order_id' => $order->id,
                                     'product_id' =>$item['productId'],
+                                    'product' => Product::getProductById($item['productId']),
                                     'quantity' => $item['quantity'],
                                     'price' =>  $item['price'],
                                     'tax_amount' => $item['tax_amount'],
@@ -218,7 +220,7 @@ class CheckoutController extends Controller
 
     public function get_order_product(){
         try{
-            $order = order::with(['orderItems','orderItems.product'])->where('user_id',Auth::user()->id)->where('payment_status','succeeded')->get(); 
+            $order = order::with('orderItems')->where('user_id',Auth::user()->id)->where('payment_status','succeeded')->get(); 
             if($order){
                 return response()->json([
                     'success' => true,

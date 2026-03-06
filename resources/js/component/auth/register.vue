@@ -66,7 +66,7 @@
   import axios from 'axios'
   import { useRouter } from 'vue-router'  
   import toastr from 'toastr'
-  import { User } from '../store'
+  import { User } from '../../store'
   import { apiRequest } from '@/services/api'
 
   function reset(){

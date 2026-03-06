@@ -9,6 +9,16 @@
     z-index: 99999 !important;
 }
 
+.product-page-navigation {
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.product-page-navigation:hover{
+    text-decoration: underline dotted;
+    cursor: pointer;
+}
+
 .modern-loader-overlay {
     position: fixed;
     top: 0;
@@ -455,7 +465,7 @@
     font-size: 1.07em;
     outline: none;
     transition: border 0.2s;
-}
+}   
 
 .login-input:focus {
     border: 1.4px solid #1d92df;
@@ -521,7 +531,7 @@
 .modern-product-listing_order {
     background: linear-gradient(115deg, #f0fdfa 0%, #e0f2fe 100%);
     min-height: 87vh;
-    padding: 4.2rem 0 0 0;
+    padding: 2.5rem 0 0 0;
     background: transparent;
 }
 
@@ -1222,6 +1232,22 @@
     transition: border-color .22s;
     color: #334155;
     font-size: 1.09rem;
+}
+
+.order-input {
+    border: 1px solid #afe4f6;
+    border-radius: 15px;
+    background: #f0f9ff;
+    transition: border-color .22s;
+    color: #334155;
+    padding: 0.69em 0.8em;
+    font-size: 1.09rem;
+}
+
+.order-input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 2px 12px #bae6fd33;
+    outline: none;
 }
 
 .login-input:focus {
@@ -2057,7 +2083,7 @@
     min-width: 0;
 }
 
-.premium-order-bottom{
+.premium-order-bottom {
     width: 100%;
     display: flex;
     justify-content: flex-end;

@@ -1,7 +1,7 @@
 import { createWebHistory, createRouter } from "vue-router";
 import product from "../component/product.vue";
 import Add_product from "../component/add_product.vue";
-import Login from "../component/login.vue";
+import Login from "../component/auth/login.vue";
 import Cart from "../component/cart.vue";
 import Checkout from "../component/checkout.vue";
 import CheckoutSuccess from "../component/CheckoutSuccess.vue";
@@ -46,12 +46,12 @@ const routes = [
         }
     },
     {
-        path: '/login',
+        path: '/auth/login',
         name: 'login',
         component: Login,
     },
     {
-        path: '/register/:register',
+        path: '/auth/register/:register',
         name: 'register',
         component: Login,
         props : true,

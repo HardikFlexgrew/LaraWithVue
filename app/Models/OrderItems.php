@@ -15,10 +15,11 @@ class OrderItems extends Model
     protected $fillable = [
         'order_id',
         'product_id',
+        'product',
         'quantity',
         'price',
         'tax_amount',
-        'total'
+        'total',
     ];
 
     public function order(){
@@ -28,5 +29,9 @@ class OrderItems extends Model
     public function product(){
         return $this->belongsTo(Product::class,'product_id');
     }
+
+    protected $casts = [
+        'product' => 'object'
+    ];
 
 }

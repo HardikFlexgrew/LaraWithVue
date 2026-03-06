@@ -4,13 +4,16 @@
   </div>
   <div v-else class="modern-add-product-container">
     <form class="modern-add-product-form" @submit.prevent="handleSubmit" enctype="multipart/form-data">
-      <h2 class="modern-form-title">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="margin-right: .5em;">
-          <rect x="2" y="7" width="20" height="15" rx="3.5" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.3"/>
-          <path d="M6 7V5.5A2.5 2.5 0 0 1 8.5 3h7A2.5 2.5 0 0 1 18 5.5V7" stroke="#1197e6" stroke-width="1.2" />
-        </svg>
-        {{ id ? 'Update Product' : 'Add New Product'}}
-      </h2>
+      <div style="display: flex;align-items: center;justify-content: space-between;">
+        <h2 class="modern-form-title">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="margin-right: .5em;">
+            <rect x="2" y="7" width="20" height="15" rx="3.5" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.3"/>
+            <path d="M6 7V5.5A2.5 2.5 0 0 1 8.5 3h7A2.5 2.5 0 0 1 18 5.5V7" stroke="#1197e6" stroke-width="1.2" />
+          </svg>
+          {{ id ? 'Update Product' : 'Add New Product'}}
+        </h2>
+        <a v-if="id" class="product-page-navigation" @click="editProductCheck">Product</a>
+      </div>
       <!-- All form fields stacked in single block columns except last line -->
       <div class="modern-grid-form" style="display: flex; flex-direction: column; gap: 1.3rem;">
         <div class="modern-wide-group">
@@ -134,6 +137,12 @@ const previewImage = ref(null) // for image preview
 const errorMessage = ref([]);
 const loading = ref(false);
 const {can} = useAbility();
+const emit = defineEmits(['edited']);
+
+
+function editProductCheck(){
+  emit('edited',true);
+}
 
 async function getEditProductDetails(productId) {
   if(can('edit','product')){
@@ -222,6 +231,7 @@ async function handleSubmit() {
         });
 
         if(props?.id){
+          editProductCheck();
           router.push({name :'product'});
         }
 
