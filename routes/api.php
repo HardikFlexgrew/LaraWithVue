@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\AdminOrderController;
 use Spatie\Permission\Models\Permission;
 use \Spatie\Permission\Middleware\PermissionMiddleware;
 
@@ -31,6 +32,10 @@ Route::middleware(['web'])->group(function () {
         Route::post('/create-checkout-session', [CheckoutController::class, 'createSession'])->name('api.checkout.create');
         Route::post('/set-status-cart-item/{sessionId}',[CheckoutController::class, 'setStatus'])->name('api.checkout.set-status');
         Route::get('/get-order-product',[CheckoutController::class,'get_order_product'])->name('api.order.product');
+
+        // Admin order routes
+        Route::get('/admin/orders', [AdminOrderController::class, 'index'])->name('api.admin.ordres');
+        Route::get('/admin/user-orders/{userId}', [AdminOrderController::class, 'userOrders'])->name('api.admin.users.order');
     });
 
     Route::post('/product/create', [productController::class, 'create'])

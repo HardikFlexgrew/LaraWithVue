@@ -45,7 +45,7 @@
           </li>
           <li>
             <!-- Orders Module Navigation -->
-            <RouterLink class="nav-link-modern nav-link-icon" :to="{name : 'orders'}">
+            <RouterLink class="nav-link-modern nav-link-icon" :to="{name : userStore.role == 'Admin' ? 'admin_orders' : 'orders'}">
               <span class="icon">
                 <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
                   <g>
