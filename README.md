@@ -6,11 +6,9 @@ This project is a modern e-commerce web application built with Laravel (PHP) and
 
 - **Backend:**
   - Laravel 12, PHP 8.2
-  - Inertia.js for SPA integration
   - Stripe payment integration
   - User authentication and profile management
   - Role and permission management (Spatie)
-  - Country/state management
   - Order, cart, product, shipping rate models
 - **Frontend:**
   - Vue 3, Pinia state management
@@ -23,8 +21,8 @@ This project is a modern e-commerce web application built with Laravel (PHP) and
   - Vite, Tailwind, PostCSS
   - Laravel Vite plugin
 - **Dev Tools:**
-  - Laravel Breeze, PHPUnit, Faker, Pint, Sail
-
+  - Laravel Breeze
+    
 ### Project Structure
 
 - `app/Models/` — Eloquent models for User, Product, Order, OrderItems, CartProduct, Country, ShippingRates
@@ -70,3 +68,5 @@ This project is a modern e-commerce web application built with Laravel (PHP) and
 ### License
 
 MIT
+
+You see any mistakes please contact hardik.d@flexgrew.com
