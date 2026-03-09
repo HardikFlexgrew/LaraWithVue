@@ -186,15 +186,7 @@ const filteredProducts = computed(() => {
   const term = filterText.value.trim().toLowerCase();
   
   if (!term) {
-    return cartProduct.cartDetails.map((cartDetail) => {
-      // if (Array.isArray(cartDetail)) {
-        return cartDetail;
-      // } else if (cartDetail && typeof cartDetail === 'object') {
-        // return [cartDetail];
-      // } else {
-      //   return [];
-      // }
-    });
+    return cartProduct.cartDetails.map((cartDetail) => cartDetail);
   }
   
   return cartProduct.cartDetails.map((cartDetail) => {  
