@@ -68,7 +68,10 @@
           <span class="modern-product-card__price">
             {{ '$' + products?.price }}
           </span>
-          <div class="modern-product-card__actions">
+          <div class="modern-product-card__actions" v-if="products.product.stock < 0" style="font-size: 20px;color: #ff2e2e;font-weight: 600;">
+            <span>Out of Stock</span>
+          </div>
+          <div class="modern-product-card__actions" v-else>
             <button @click="decreaseQuantity(products?.id)" class="modern-btn modern-btn--subtract"
               aria-label="Descrease Product" :disabled="products?.quantitty === 0">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="#e52727d1">
@@ -77,7 +80,7 @@
             </button>
             <span class="modern-btn modern-btn--quantity" title="Delete product">{{ products?.quantitty }}</span>
             <button class="modern-btn modern-btn--addition" @click="increaseQuantity(products?.id)"
-              aria-label="Increase Product">
+              aria-label="Increase Product" :disabled="diableIncr">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <rect x="8" y="3" width="5" height="15" rx="2" fill="#fff" />
                 <rect x="4" y="8" width="13" height="5" rx="2" fill="#fff" />
@@ -97,11 +100,7 @@
               Total
             </span>
             <span class="show-total-amount">
-              ${{ 
-                cartProduct.cartDetails[0].reduce((total, product) => {
-                  return total + ((product.price || 0) * (product.quantitty || 0));
-                }, 0)
-              }}
+              ${{ totalAmount }}
             </span>
           </div>
           <div>
@@ -145,6 +144,7 @@ const filterPlaceholder = ref();
 let typed = null;
 const orderComponent = ref(false);
 const loading = ref(false);
+const diableIncr = ref(false);
 
 async function getCartProduct() {
   cartProduct.cartDetails = []
@@ -156,13 +156,6 @@ async function getCartProduct() {
       cartProduct.cartItems.push(e.product);
     });
   }
-}
-
-function changeComponent(change){
-  loading.value = true;
-  if(change) orderComponent.value = true
-  else orderComponent.value = false;
-  loading.value = false;
 }
 
 onMounted(async () => { 
@@ -182,11 +175,20 @@ onMounted(async () => {
   }
 });
 
+
 const filteredProducts = computed(() => {
   const term = filterText.value.trim().toLowerCase();
   
   if (!term) {
-    return cartProduct.cartDetails.map((cartDetail) => cartDetail);
+    return cartProduct.cartDetails.map((cartDetail) => {  
+        if (Array.isArray(cartDetail)) {
+          return cartDetail;
+        } else if (cartDetail && typeof cartDetail === 'object') {
+          return [cartDetail];
+        } else {
+          return [];
+        }
+    });
   }
   
   return cartProduct.cartDetails.map((cartDetail) => {  
@@ -200,36 +202,49 @@ const filteredProducts = computed(() => {
   })
 });
 
+const totalAmount = computed(()=>{
+  return filteredProducts.value[0].reduce((total, cart) =>cart.product.stock > 0 ? total + ((cart.price || 0) * (cart.quantitty || 0)) : 0, 0)
+})
+
 async function decreaseQuantity(productId) {
   const firstItemObject = [cartProduct.cartDetails];
   filteredProducts.value.forEach(element => {
-    selectedProduct = element.find(product => product.id == productId);
+    selectedProduct = element.find(cart => cart.id == productId);
   });
-  selectedProduct.quantitty -= 1;
-  if (selectedProduct.quantitty == 0) {
-    const res = await axios.post(`/api/product/cart/remove/${productId}`);
-    if(res.data.success){
-      const idx = cartProduct.cartDetails[0].findIndex((product)=>product.id == productId);
-      cartProduct.cartDetails[0].splice(idx,1);
-      cartProduct.cartItems?.splice(idx,1);
+  if(selectedProduct){
+    selectedProduct.quantitty -= 1;
+    if (selectedProduct.quantitty == 0) {
+      const res = await axios.post(`/api/product/cart/remove/${productId}`);
+      if(res.data.success){
+        const idx = cartProduct.cartDetails[0].findIndex((product)=>product.id == productId);
+        cartProduct.cartDetails[0].splice(idx,1);
+        cartProduct.cartItems?.splice(idx,1);
+      }
+    } else {
+      const res = await axios.post(`/api/product/cart/operation/${productId}`, selectedProduct);
     }
-  } else {
-    const res = await axios.post(`/api/product/cart/operation/${productId}`, selectedProduct);
   }
 }
 
 async function increaseQuantity(productId) {
   const firstItemObject = [cartProduct.cartDetails];
   filteredProducts.value.forEach(element => {
-    selectedProduct = element.find(product => product.id == productId);
+    selectedProduct = element.find(cart => cart.id == productId);
   });
-  selectedProduct.quantitty += 1;
-  const res = await axios.post(`/api/product/cart/operation/${productId}`, selectedProduct);
+  if(selectedProduct.product.stock < 1 || selectedProduct.quantitty == selectedProduct.product.stock){
+    toastr.error('Product is currently out of stock','Oops!');
+    diableIncr.value = true;
+  } else {
+    if(selectedProduct){
+      selectedProduct.quantitty += 1;
+    }
+    const res = await axios.post(`/api/product/cart/operation/${productId}`, selectedProduct);
+  }
 }
 
 async function proceedToCheckout() {
   try {
-    const filteredItems = cartProduct.cartDetails[0]?.filter(item => item.user_id === userStore.user.id);
+    const filteredItems = cartProduct.cartDetails[0]?.filter(item => item.user_id === userStore.user.id && item.product.stock > 0);
     if (!filteredItems || filteredItems.length === 0) {
       toastr.error('Your cart is empty', 'Error');
       return;

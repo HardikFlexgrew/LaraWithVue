@@ -193,7 +193,7 @@ class CheckoutController extends Controller
                                     "total" => (($item['price'] *  $item['quantity'])  + $item['tax_amount'])
                                 ];
                             });
-
+                            dd($orderItems);
                             $orderItemInsert = $order->orderItems()->createMany($orderItems);
 
                             if($orderItemInsert){

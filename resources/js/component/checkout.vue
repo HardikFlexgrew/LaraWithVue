@@ -261,7 +261,7 @@ const shippingCost = ref(0);
 
 // Computed properties
 const filteredCartItems = computed(() => {
-  return cartProduct.cartDetails[0].filter(item => item.user_id === userStore.user.id);
+  return cartProduct.cartDetails[0].filter(item => item.user_id === userStore.user.id && item.product.stock > 0);
 });
 
 const subtotal = computed(() => {

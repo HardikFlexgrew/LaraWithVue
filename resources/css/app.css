@@ -979,8 +979,8 @@
 }
 
 .modern-preview-image {
-    max-width: 130px;
-    max-height: 100px;
+    max-width: 40%;
+    max-height: 20%;
     border: 2px solid #d1eaff;
     border-radius: 7px;
     margin-left: 0px;

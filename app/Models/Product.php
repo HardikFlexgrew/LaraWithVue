@@ -15,6 +15,7 @@ class Product extends Model
         'title',
         'description',
         'price',
+        'stock',
         'image',
     ];
 
@@ -30,4 +31,8 @@ class Product extends Model
     public static function getProductById($id){
         return Product::select('title','description','price','image')->where('id',$id)->first()->toArray();
     }
+
+    protected $casts = [
+        'stock' => 'integer'
+    ];
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\createProductRequest;
 use App\Models\Product;
 use App\Models\CartProduct;
 use \Illuminate\Database\QueryException as queryException;
@@ -26,17 +27,9 @@ class productController extends Controller
         }
     }
 
-    public function create(Request $request){
+    public function create(createProductRequest $request){
         // Validate the request data
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'image' => 'required|mimes:jpg,jpeg,png|max:2048',
-        ],[
-            'title.required' => 'Title is required',
-            'price.required' => 'Price is required',
-            'image.required' => 'Image is required'
-        ]);
+        $data = $request->validated();
 
         try {
             
@@ -51,6 +44,7 @@ class productController extends Controller
                 "title" => $request->title,
                 "description" => $request->description,
                 "price" => $request->price,
+                "stock" => $request->stock,
                 "image" => $imagePath ?? null,
             ]);
 
@@ -63,6 +57,7 @@ class productController extends Controller
                         'title' => $Product->title,
                         'description' => $Product->description,
                         'price' => $Product->price,
+                        'stock' => $Product->stock,
                         'image' => $Product->image
                     ],
                 ], 201);
@@ -93,9 +88,12 @@ class productController extends Controller
                 'title' => 'required|string|max:255',
                 'description' => 'string',
                 'price' => 'required|numeric|min:0',
+                'stock' => 'required|integer|min:0',
             ], [
                 'title' => 'Title is required',
                 'price' => 'Price is required',
+                'stock.required' => 'Stock is required',
+                'stock.integer' => 'Stock must be a whole number'
             ]);
 
             $imagePath = null;
@@ -111,6 +109,7 @@ class productController extends Controller
                         'title' => $request->title,
                         'description' => $request->description,
                         'price' => $request->price,
+                        'stock' => $request->stock,
                         'image' => $imagePath ?? null,
                     ]
                 );
@@ -120,6 +119,7 @@ class productController extends Controller
                     [
                         'title' => $request->title,
                         'description' => $request->description,
+                        'stock' => $request->stock,
                         'price' => $request->price,
                     ]
                 );
@@ -165,41 +165,54 @@ class productController extends Controller
     }
 
     public function addToCart($productId){
-        $productPrice = Product::find($productId);
-        $checkExist = CartProduct::with('product')->where('product_id', $productId)
-            ->where('user_id', Auth::user()->id)
-            ->where('price',$productPrice->price)
-            ->where('status',1)
-            ->first();
+        $productPrice = Product::where('id',$productId)->where('stock','>',0)->first();
+        if($productPrice){
+            $checkExist = CartProduct::with('product')->where('product_id', $productId)
+                ->where('user_id', Auth::user()->id)
+                ->where('price',$productPrice->price)
+                ->where('status',1)
+                ->first();
 
-        if ($checkExist) {
-            $checkExist->quantitty = $checkExist->quantitty + 1;
-            $checkExist->save();
-            $cartProduct = $checkExist; 
-        } else {
-            $cartProduct = CartProduct::create([
-                'product_id' => $productId,
-                'user_id' => Auth::user()->id, 
-                'quantitty' => 1, 
-                'status' => 1,
-                'price' => $productPrice->price,
-            ]);
-        }
+            if ($checkExist) {
+                if($checkExist->quantitty != $productPrice->stock){
+                    $checkExist->quantitty = $checkExist->quantitty + 1;
+                    $checkExist->save();
+                    $cartProduct = $checkExist; 
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Product is currently out of stock."
+                    ]);
+                }
+            } else {
+                $cartProduct = CartProduct::create([
+                    'product_id' => $productId,
+                    'user_id' => Auth::user()->id, 
+                    'quantitty' => 1, 
+                    'status' => 1,
+                    'price' => $productPrice->price,
+                ]);
+            }
 
-        if($cartProduct){
-            return response()->json([
-                'success' => true,
-                'message' => 'Product added to cart successfully!',
-                'cart_details' => $cartProduct,
-                'cart_product' => $cartProduct->product,
-            ]);
+            if($cartProduct){
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Product added to cart successfully!',
+                    'cart_details' => $cartProduct,
+                    'cart_product' => $cartProduct->product,
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to add product to cart.'   
+                ], 500);
+            }
         } else {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to add product to cart.'   
-            ], 500);
+                'message' => "Product is currently out of stock."
+            ]);
         }
-        
     }
 
     public function showCartProduct(){
@@ -229,10 +242,8 @@ class productController extends Controller
     }
 
     public function cartOperation(Request $request,$productId){
-        
         $cartProduct = CartProduct::find($productId);
         $cartProduct->quantitty = $request->quantitty ;
-        $cartProduct->save();
-            
+        $cartProduct->save();       
     }
 }

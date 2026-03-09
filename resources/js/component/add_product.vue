@@ -77,31 +77,49 @@
               </span>
             </div>
           </div>
-          <div class="modern-wide-group" style="flex: 2 1 290px; min-width: 220px;">
-            <label for="image" class="modern-form-label">Image</label>
-            <div class="modern-image-upload-flex modern-form-input" style="flex-direction: column;">
-              <input 
-                type="file" 
-                id="image" 
-                @change="handleImageUpload" 
-                class="modern-form-input-file form-control" 
-                accept=".jpg,.jpeg,.png"
-                name="image" 
-                style="display:block;width:100%;"
-              />
-              <div v-if="previewImage" class="modern-preview-image-wrapper-vertical">
-                <img :src="previewImage" alt="Image Preview" class="modern-preview-image" />
-              </div>
-            </div>
+          <div class="modern-wide-group" style="flex: 16 1 205px; min-width: 180px; max-width: 260px;">
+            <label for="stock" class="modern-form-label">Stock&nbsp;</label>
+            <input 
+              type="number" 
+              id="stock" 
+              v-model="stock" 
+              class="modern-form-input" 
+              min="0" 
+              placeholder="0"
+              name="stock"
+              style="display:block;width:100%;"
+            />
             <div class="modern-errorMessage">
-              <span v-if="errorMessage['image']" class="modern-error-message">
+              <span v-if="errorMessage['stock']" class="modern-error-message">
                 <svg width="16" height="16" fill="none" viewBox="0 0 20 20" style="margin-right:0.17em;"><circle cx="10" cy="10" r="9" fill="#fee2e2"/><path stroke="#db6060" d="M10 6v4"/><circle cx="10" cy="13.25" r=".75" fill="#db6060"/></svg>
-                {{ errorMessage['image'][0] }}
+                {{ errorMessage['stock'][0] }}
               </span>
             </div>
           </div>
         </div>
-
+        <div class="" style="flex: 2 1; min-width: 220px;">
+          <label for="image" class="modern-form-label">Image</label>
+          <div class="modern-image-upload-flex modern-form-input" style="flex-direction: column;">
+            <input 
+              type="file" 
+              id="image" 
+              @change="handleImageUpload" 
+              class="modern-form-input-file form-control" 
+              accept=".jpg,.jpeg,.png"
+              name="image" 
+              style="display:block;width:100%;"
+            />
+            <div v-if="previewImage" class="modern-preview-image-wrapper-vertical">
+              <img :src="previewImage" alt="Image Preview" class="modern-preview-image" />
+            </div>
+          </div>
+          <div class="modern-errorMessage">
+            <span v-if="errorMessage['image']" class="modern-error-message">
+              <svg width="16" height="16" fill="none" viewBox="0 0 20 20" style="margin-right:0.17em;"><circle cx="10" cy="10" r="9" fill="#fee2e2"/><path stroke="#db6060" d="M10 6v4"/><circle cx="10" cy="13.25" r=".75" fill="#db6060"/></svg>
+              {{ errorMessage['image'][0] }}
+            </span>
+          </div>
+        </div>
       </div>
       <div class="modern-form-actions">
         <button type="submit" class="modern-submit-btn modern-neon-btn">
@@ -132,6 +150,7 @@ const router = useRouter();
 const title = ref('')
 const description = ref('')
 const price = ref('')
+const stock = ref('')
 const imageFile = ref(null)  // store the file object
 const previewImage = ref(null) // for image preview
 const errorMessage = ref([]);
@@ -171,6 +190,7 @@ if(props?.id){
     title.value = data?.title ?? '',
     description.value = data?.description ?? '',
     price.value = data?.price ?? '',
+    stock.value = data?.stock ?? '',
     previewImage.value = `/storage/${data?.image}` ?? ''
     loading.value = false;
   });
@@ -192,6 +212,7 @@ async function handleSubmit() {
     const formData = new FormData();
     formData.append('title', title.value);
     formData.append('description', description.value);
+    formData.append('stock', stock.value);
     formData.append('price', price.value);
 
     // Only append image if a file was selected
@@ -219,6 +240,7 @@ async function handleSubmit() {
         title.value = '';
         description.value = '';
         price.value =  '';
+        stock.value =  '';
         imageFile.value = null;
         previewImage.value = null;
         errorMessage.value = [];

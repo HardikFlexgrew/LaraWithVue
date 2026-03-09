@@ -39,8 +39,15 @@
             loading="lazy" />
         </div>
         <div class="modern-product-card__body">
-          <h3 class="modern-product-card__title">{{ product.title }}</h3>
-          <p class="modern-product-card__desc" :title="product.description">
+          <h3 class="modern-product-card__title" style="width: 100%;display: flex; align-items: center; justify-content: space-between; gap: 1.15em;">
+            <span style="display: flex; align-items: center; gap: 0.65em;">
+              {{ product.title }}
+            </span>
+            <span v-if="userStore.role == 'Admin'" style="font-size: 0.93em; color: #0891b2; background: #e0f2fe; padding: 0.21em 0.68em; border-radius: 6px; font-weight: 500; margin-left: 0.3em;">
+              Stock: {{ product.stock }}
+            </span>
+          </h3>
+          <p class="modern-product-card__desc" :title="product.description" style="margin-bottom: 0;">
             {{ product.description.length > 80 ? product.description.substring(0, 80) + '...' : product.description }}
           </p>
         </div>
@@ -64,7 +71,7 @@
               </svg>
             </button>
             <button @click="addToCart(product.id)" class="modern-btn modern-btn--cart" title="Add to cart"
-              aria-label="Add to cart">
+              aria-label="Add to cart" :disabled="addCartDisabled">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M5 6h14l-1.5 9h-11L5 6zm0 0L4 2H2m2 4l1.5 9m4.5 3a1 1 0 110 2 1 1 0 010-2zm6 0a1 1 0 110 2 1 1 0 010-2z"
@@ -97,17 +104,20 @@ import { useAbility } from '@casl/vue';
 import { cartProducts } from '@/store';
 import Typed from 'typed.js';
 import EditProduct from './add_product.vue';
+import { User } from '@/store';
 
 const router = useRouter();
 const products = ref([]);
 const filterText = ref('');
 const cartProduct = cartProducts();
 const { can } = useAbility();
+const userStore = User();
 const editCheck = ref(false);
 const editId = ref(0);
 const typedInput = ref(null);
 const filterPlaceholder = ref();
 let typed = null;
+const addCartDisabled = ref(false);
 
 async function getProduct() {
   const res = await axios.get('/api/product/show');
@@ -150,6 +160,9 @@ async function addToCart(productId) {
     if (res.data.success) {
       cartProduct.addToCart(res.data.cart_details);
       toastr.success(res.data.message, 'Success');
+    } else {
+      toastr.error(res.data.message,'Oops!');
+      addCartDisabled.value = true;
     }
   } catch (err) {
     console.log(err);
