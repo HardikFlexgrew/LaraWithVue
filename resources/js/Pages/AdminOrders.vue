@@ -32,7 +32,7 @@
             <th>Total order</th>
             <th>Payment</th>
             <th>Payment status</th>
-            <th>Order status</th>
+            <th>Order status</th> 
             <th>Date</th>
           </tr>
         </thead>

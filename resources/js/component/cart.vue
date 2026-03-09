@@ -184,19 +184,16 @@ onMounted(async () => {
 
 const filteredProducts = computed(() => {
   const term = filterText.value.trim().toLowerCase();
+  
   if (!term) {
-    // cartDetails might be an array of objects, not arrays.
-    // If so, we should not use filter() directly.
     return cartProduct.cartDetails.map((cartDetail) => {
-      // If cartDetail is an array, filter; otherwise, return matching object in array
-      if (Array.isArray(cartDetail)) {
+      // if (Array.isArray(cartDetail)) {
         return cartDetail;
-      } else if (cartDetail && typeof cartDetail === 'object') {
-        // If it's a single object, wrap in array if user matches
-        return [cartDetail];
-      } else {
-        return [];
-      }
+      // } else if (cartDetail && typeof cartDetail === 'object') {
+        // return [cartDetail];
+      // } else {
+      //   return [];
+      // }
     });
   }
   

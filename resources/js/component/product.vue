@@ -180,8 +180,7 @@ async function deleteProduct(productId) {
   }
 } 
 
-onMounted(async () => {
-  await getProduct();
+onUpdated((typed)=>{
   if (typedInput.value) {
     typed = new Typed(typedInput.value, {
       strings: [
@@ -195,6 +194,10 @@ onMounted(async () => {
       loop: true
     });
   }
+})
+
+onMounted(async () => {
+  await getProduct();
 });
 
 </script>
