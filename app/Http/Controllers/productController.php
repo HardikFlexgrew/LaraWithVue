@@ -30,7 +30,7 @@ class productController extends Controller
     public function create(createProductRequest $request){
         // Validate the request data
         $data = $request->validated();
-
+        
         try {
             
             $imagePath = null;
@@ -63,6 +63,7 @@ class productController extends Controller
                 ], 201);
             }
         } catch(queryException $e)  {
+            dd($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Insert encountered errors: ' . $e->getMessage()
@@ -181,7 +182,7 @@ class productController extends Controller
                 } else {
                     return response()->json([
                         'success' => false,
-                        'message' => "Product is currently out of stock."
+                        'message' => "You can buy only up to {$productPrice->stock}(unit) of this product"
                     ]);
                 }
             } else {

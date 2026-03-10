@@ -80,7 +80,7 @@
           <div class="modern-wide-group" style="flex: 16 1 205px; min-width: 180px; max-width: 260px;">
             <label for="stock" class="modern-form-label">Stock&nbsp;</label>
             <input 
-              type="number" 
+              type="text" 
               id="stock" 
               v-model="stock" 
               class="modern-form-input" 
@@ -265,6 +265,7 @@ async function handleSubmit() {
         });
       }
     } catch(err){
+      console.log(err);
       if (err.response && err.response.data) {
         if(err.response.data.errors){
           errorMessage.value = err.response.data.errors;

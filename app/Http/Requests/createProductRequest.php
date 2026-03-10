@@ -11,7 +11,7 @@ class createProductRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -36,12 +36,6 @@ class createProductRequest extends FormRequest
             'image.required' => 'Image is required',
             'stock.required' => 'Stock is required',
             'stock.integer' => 'Stock must be a whole number'
-        ];
-    }
-
-    public function attributes(){
-        return [
-            'stock' => 'product stock'
         ];
     }
 }

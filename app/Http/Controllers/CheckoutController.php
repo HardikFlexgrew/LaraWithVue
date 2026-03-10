@@ -16,6 +16,7 @@ use App\Models\order;
 use App\Models\OrderItems;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
@@ -193,8 +194,25 @@ class CheckoutController extends Controller
                                     "total" => (($item['price'] *  $item['quantity'])  + $item['tax_amount'])
                                 ];
                             });
-                            dd($orderItems);
+
                             $orderItemInsert = $order->orderItems()->createMany($orderItems);
+
+                            if($orderItemInsert){
+                                $cases = [];
+                                $ids = [];
+                                foreach ($orderItems as $item) {
+                                    $id = $item['product_id'];
+                                    $qty = $item['quantity'];
+                                    $cases[] = "WHEN {$id} THEN {$qty}";
+                                    $ids[] = $id;
+                                }
+
+                                $ids = implode(',',$ids);
+                                $cases = implode(' ',$cases);
+
+                                $sql = "UPDATE products SET stock = stock - CASE id {$cases} END WHERE id IN ({$ids})";
+                                DB::update($sql);
+                            }
 
                             if($orderItemInsert){
                                return response()->json([

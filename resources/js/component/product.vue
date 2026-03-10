@@ -170,6 +170,7 @@ async function addToCart(productId) {
 }
 
 async function deleteProduct(productId) {
+  
   if (can('delete', 'product')) {
     try {
       const res = await axios.post(`/api/product/delete/${productId}`);
@@ -179,7 +180,8 @@ async function deleteProduct(productId) {
           progressBar: true,
           closeButton: true
         });
-        await getProduct()
+        const idx = products.value.findIndex((product) => product.id == productId);
+        products.value.splice(idx,1);
       }
     } catch (err) {
       toastr.error(err.response.data.message, 'Error', {

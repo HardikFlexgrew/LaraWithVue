@@ -68,8 +68,14 @@
           <span class="modern-product-card__price">
             {{ '$' + products?.price }}
           </span>
-          <div class="modern-product-card__actions" v-if="products.product.stock < 0" style="font-size: 20px;color: #ff2e2e;font-weight: 600;">
+          <div class="modern-product-card__actions" v-if="products.product.stock < 1" style="font-size: 20px;color: #ff2e2e;font-weight: 600;">
             <span>Out of Stock</span>
+            <button class="modern-btn modern-btn--delete" @click="removeCartItem(products?.id)" aria-label="Remove from cart" title="Remove Item" style="margin-left: 10px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m2 0V20a2 2 0 01-2 2H6a2 2 0 01-2-2V6h16z"
+                      stroke="#ffffff" stroke-width="2"/>
+              </svg>
+            </button>
           </div>
           <div class="modern-product-card__actions" v-else>
             <button @click="decreaseQuantity(products?.id)" class="modern-btn modern-btn--subtract"
@@ -84,6 +90,12 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <rect x="8" y="3" width="5" height="15" rx="2" fill="#fff" />
                 <rect x="4" y="8" width="13" height="5" rx="2" fill="#fff" />
+              </svg>
+            </button>
+            <button class="modern-btn modern-btn--delete" @click="removeCartItem(products?.id)" aria-label="Remove from cart" title="Remove Item" style="margin-left: 10px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m2 0V20a2 2 0 01-2 2H6a2 2 0 01-2-2V6h16z"
+                      stroke="#ffffff" stroke-width="2"/>
               </svg>
             </button>
           </div>
@@ -181,13 +193,13 @@ const filteredProducts = computed(() => {
   
   if (!term) {
     return cartProduct.cartDetails.map((cartDetail) => {  
-        if (Array.isArray(cartDetail)) {
-          return cartDetail;
-        } else if (cartDetail && typeof cartDetail === 'object') {
-          return [cartDetail];
-        } else {
-          return [];
-        }
+      if (Array.isArray(cartDetail)) {
+        return cartDetail;
+      } else if (cartDetail && typeof cartDetail === 'object') {
+        return [cartDetail];
+      } else {
+        return [];
+      }
     });
   }
   
@@ -206,6 +218,18 @@ const totalAmount = computed(()=>{
   return filteredProducts.value[0].reduce((total, cart) =>cart.product.stock > 0 ? total + ((cart.price || 0) * (cart.quantitty || 0)) : 0, 0)
 })
 
+async function removeCartItem(cartId) {
+  const res = await axios.post(`/api/product/cart/remove/${cartId}`);
+  if(res.data.success){
+    toastr.success(res.data.message,'Success');
+    const idx = cartProduct.cartDetails[0].findIndex((cartItem) => cartItem.id == cartId);
+    cartProduct.cartDetails[0].splice(idx,1);
+    cartProduct.cartItems?.splice(idx,1);
+  } else {
+    console.log(res.data.message);
+  }
+}
+
 async function decreaseQuantity(productId) {
   const firstItemObject = [cartProduct.cartDetails];
   filteredProducts.value.forEach(element => {
@@ -222,6 +246,7 @@ async function decreaseQuantity(productId) {
       }
     } else {
       const res = await axios.post(`/api/product/cart/operation/${productId}`, selectedProduct);
+      diableIncr.value = false
     }
   }
 }
@@ -232,7 +257,8 @@ async function increaseQuantity(productId) {
     selectedProduct = element.find(cart => cart.id == productId);
   });
   if(selectedProduct.product.stock < 1 || selectedProduct.quantitty == selectedProduct.product.stock){
-    toastr.error('Product is currently out of stock','Oops!');
+    if(selectedProduct.product.stock < 1) toastr.error(`Product is currently out of stock`,'Oops!');
+    else toastr.error(`You can buy only up to ${selectedProduct.product.stock}(unit) of this product`,'Oops!');
     diableIncr.value = true;
   } else {
     if(selectedProduct){
