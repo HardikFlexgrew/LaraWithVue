@@ -1364,7 +1364,7 @@ class Blueprint
      */
     public function softDeletesDatetime($column = 'deleted_at', $precision = null)
     {
-        return $this->datetime($column, $precision)->nullable();
+        return $this->dateTime($column, $precision)->nullable();
     }
 
     /**
@@ -1516,6 +1516,17 @@ class Blueprint
         $options = $dimensions ? compact('dimensions') : [];
 
         return $this->addColumn('vector', $column, $options);
+    }
+
+    /**
+     * Create a new tsvector column on the table.
+     *
+     * @param  string  $column
+     * @return \Illuminate\Database\Schema\ColumnDefinition
+     */
+    public function tsvector($column)
+    {
+        return $this->addColumn('tsvector', $column);
     }
 
     /**

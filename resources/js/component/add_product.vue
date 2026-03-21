@@ -108,9 +108,33 @@
               accept=".jpg,.jpeg,.png"
               name="image" 
               style="display:block;width:100%;"
+              multiple
             />
-            <div v-if="previewImage" class="modern-preview-image-wrapper-vertical">
-              <img :src="previewImage" alt="Image Preview" class="modern-preview-image" />
+            <div class="preview-images" style="display: flex; flex-direction: column;" v-if="previewImage.length > 0" >
+              <table style="width:100%; border-collapse: separate; border-spacing: 11px 0;">
+                <thead>
+                  <th></th>
+                  <th>Set Default</th>
+                </thead>
+                <tbody>
+                  <tr v-for="(preview, idx) in previewImage" :key="idx">
+                    <td style="vertical-align: middle;">
+                      <img 
+                        v-if="preview" 
+                        :src="preview" 
+                        alt="Image Preview"
+                        class="modern-preview-image"
+                        style="max-width: 110px; min-width: 70px; height: 68px; object-fit: contain; display: block; border-radius: 8px; box-shadow: 0 1px 6px #38bdf827;"
+                      />
+                    </td>
+                    <td style="vertical-align: middle; padding-left: 19px; min-width: 54px;">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="radio" role="switch" id="switchCheckChecked" @input="setDefault(idx)" :value="idx" :checked="defaultIndex == idx">
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
           <div class="modern-errorMessage">
@@ -151,8 +175,9 @@ const title = ref('')
 const description = ref('')
 const price = ref('')
 const stock = ref('')
-const imageFile = ref(null)  // store the file object
-const previewImage = ref(null) // for image preview
+const imageFile = ref([])  // store the file object
+const previewImage = ref([]) // for image preview
+const defaultIndex = ref(0)
 const errorMessage = ref([]);
 const loading = ref(false);
 const {can} = useAbility();
@@ -181,6 +206,10 @@ async function getEditProductDetails(productId) {
     router.push({name :'product'});
     toastr.error('Unauthorized','Error');
   }
+} 
+
+function setDefault(index) {
+  defaultIndex.value = index;
 }
 
 if(props?.id){
@@ -193,17 +222,22 @@ if(props?.id){
     stock.value = data?.stock ?? '',
     previewImage.value = `/storage/${data?.image}` ?? ''
     loading.value = false;
+    defaultIndex.value = data?.default_image ?? 0
   });
 }
 
 function handleImageUpload(e) {
-  const file = e.target.files[0];
-  if(file){
-    imageFile.value = file;
-    previewImage.value = URL.createObjectURL(file);
+  previewImage.value = [];
+  imageFile.value = [];
+  const files = [...e.target.files];
+  if(files){
+    files.map((file)=>{
+      imageFile.value.push(file);
+      previewImage.value.push(URL.createObjectURL(file));
+    });
   } else {
-    imageFile.value = null;
-    previewImage.value = null;
+    imageFile.value = [];
+    previewImage.value = [];
   }
 }
 
@@ -214,10 +248,13 @@ async function handleSubmit() {
     formData.append('description', description.value);
     formData.append('stock', stock.value);
     formData.append('price', price.value);
-
+    formData.append('default_index',defaultIndex.value);
     // Only append image if a file was selected
-    if (imageFile.value) {
-      formData.append('image', imageFile.value);
+    if (imageFile.value.length > 0) {
+      console.log(imageFile.value);
+      [...imageFile.value].forEach((file)=>{
+        formData.append('images[]',file);
+      })
     }
 
     try {
@@ -241,16 +278,17 @@ async function handleSubmit() {
         description.value = '';
         price.value =  '';
         stock.value =  '';
-        imageFile.value = null;
-        previewImage.value = null;
+        imageFile.value = [];
+        previewImage.value = [];
         errorMessage.value = [];
-        
+        defaultIndex.value = '';
         // Show success toastr message
         toastr.success(res.data.message, 'Success', {
           timeOut: 2000,
           progressBar: true,
           closeButton: true
         });
+        router.push({name:'product'});
 
         if(props?.id){
           editProductCheck();

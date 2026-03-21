@@ -16,7 +16,6 @@ class Product extends Model
         'description',
         'price',
         'stock',
-        'image',
     ];
 
     // The relationship should be hasMany. Each Product can have multiple CartProduct entries (for different users/carts), and CartProduct has a product_id (foreign key).
@@ -26,6 +25,10 @@ class Product extends Model
     
     public function orderItem(){
         return $this->hasMany(OrderItems::class,'product_id','id');
+    }
+
+    public function images(){
+        return $this->hasMany(ProductImages::class,'product_id','id');
     }
 
     public static function getProductById($id){

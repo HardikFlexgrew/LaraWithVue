@@ -34,8 +34,8 @@
     <div class="modern-product-listing__grid">
       <EditProduct :id="editId" v-if="editCheck" @edited="editedProduct"></EditProduct>
       <div class="modern-product-card" v-else v-for="product in filteredProducts" :key="product.id">
-        <div class="modern-product-card__img-wrapper">
-          <img :src="`/storage/${product.image}`" :alt="product.title" class="modern-product-card__img"
+        <div class="modern-product-card__img-wrapper" v-for="image in product.images" :key="image.id">
+          <img :src="`/storage/${image.path}`" :alt="product.title" class="modern-product-card__img"
             loading="lazy" />
         </div>
         <div class="modern-product-card__body">

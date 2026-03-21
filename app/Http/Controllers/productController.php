@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Requests\createProductRequest;
 use App\Models\Product;
+use App\Models\ProductImages;
 use App\Models\CartProduct;
 use \Illuminate\Database\QueryException as queryException;
 use spatie\laravelpermission\src\Middleware\PermissionMiddleware;
@@ -14,7 +15,9 @@ class productController extends Controller
 {
     public function show() {
         try{
-            $data = Product::orderBy('id','desc')->get();
+            $data = Product::with(['images' => function($q){
+                $q->where('is_default',true);
+            }])->orderBy('id','desc')->get();
             return response()->json([
                 'success' => true,
                 'products' => $data
@@ -35,18 +38,24 @@ class productController extends Controller
             
             $imagePath = null;
             
-            if($request->hasFile('image')){
-                $file = $request->file('image');
-                $imagePath = $file->store('product','public'); 
-            }
-
+            
             $Product = Product::create([
                 "title" => $request->title,
                 "description" => $request->description,
                 "price" => $request->price,
                 "stock" => $request->stock,
-                "image" => $imagePath ?? null,
             ]);
+
+            if($request->hasFile('images')){
+                foreach ($request->file('images') as $index => $file) {
+                    $imagePath = $file->store('product','public'); 
+    
+                    $Product->images()->create([
+                        'path' => $imagePath,
+                        'is_default' => $index == $request->default_index
+                    ]);
+                }
+            }
 
             if($Product){
                 return response()->json([

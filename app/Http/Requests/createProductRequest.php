@@ -24,7 +24,8 @@ class createProductRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
-            'image' => 'required|mimes:jpg,jpeg,png|max:2048',
+            'images' => 'required|array',
+            'images.*' => 'required|mimes:jpg,jpeg,png|max:2048',
             'stock' => 'required|integer|min:0',
         ];
     }

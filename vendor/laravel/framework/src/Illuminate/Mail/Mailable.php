@@ -230,7 +230,17 @@ class Mailable implements MailableContract, Renderable
 
         $connection = property_exists($this, 'connection') ? $this->connection : null;
 
-        $queueName = property_exists($this, 'queue') ? $this->queue : null;
+        if (is_null($connection) && method_exists($queue, 'resolveConnectionFromQueueRoute')) {
+            $connection = $queue->resolveConnectionFromQueueRoute($this);
+        }
+
+        $queueName = property_exists($this, 'queue')
+            ? $this->queue
+            : null;
+
+        if (is_null($queueName) && method_exists($queue, 'resolveQueueFromQueueRoute')) {
+            $queueName = $queue->resolveQueueFromQueueRoute($this);
+        }
 
         return $queue->connection($connection)->pushOn(
             $queueName ?: null, $this->newQueuedJob()
@@ -248,7 +258,17 @@ class Mailable implements MailableContract, Renderable
     {
         $connection = property_exists($this, 'connection') ? $this->connection : null;
 
-        $queueName = property_exists($this, 'queue') ? $this->queue : null;
+        $queueName = property_exists($this, 'queue')
+            ? $this->queue
+            : null;
+
+        if (is_null($connection) && method_exists($queue, 'resolveConnectionFromQueueRoute')) {
+            $connection = $queue->resolveConnectionFromQueueRoute($this);
+        }
+
+        if (is_null($queueName) && method_exists($queue, 'resolveQueueFromQueueRoute')) {
+            $queueName = $queue->resolveQueueFromQueueRoute($this);
+        }
 
         $job = $this->newQueuedJob();
 
@@ -268,7 +288,6 @@ class Mailable implements MailableContract, Renderable
     {
         $messageGroup = $this->messageGroup ?? (method_exists($this, 'messageGroup') ? $this->messageGroup() : null);
 
-        /** @phpstan-ignore callable.nonNativeMethod (false positive since method_exists guard is used) */
         $deduplicator = $this->deduplicator ?? (method_exists($this, 'deduplicationId') ? $this->deduplicationId(...) : null);
 
         return Container::getInstance()->make(SendQueuedMailable::class, ['mailable' => $this])
